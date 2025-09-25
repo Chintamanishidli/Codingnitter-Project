@@ -64,10 +64,12 @@ class Auth extends CI_Controller
     $this->email->initialize($config);
 
     // ✅ Send confirmation email to user
-    $this->email->from('info@siddhrans.in', 'Codingnitter');
+    $this->email->from('info@siddhrans.in', 'Siddhrans CRM Team');
     $this->email->to($email);
     $this->email->subject('Registration Successful');
-    $this->email->message("Hello $firstname $lastname,\n\nYou have successfully registered with Codingnitter!\n\nThanks,\nTeam Codingnitter");
+    $this->email->message("Hello $firstname $lastname,\n\nThank you for registering with us!
+            Your registration has been completed successfully. You can now log in using your credentials and start exploring our services. If you face any issues or have questions, feel free to reach out to our support team at info@siddhrans.in
+            Welcome aboard! 🚀</p>!\n\nThanks,\nSiddhrans CRM Team");
 
     if ($this->email->send()) {
       log_message('info', "Confirmation email sent to $email");
@@ -77,9 +79,9 @@ class Auth extends CI_Controller
 
     // ✅ Send registration details to admin
     $this->email->clear();
-    $this->email->from('info@siddhrans.in', 'Codingnitter');
+    $this->email->from('info@siddhrans.in', 'Siddhrans CRM Team');
     $this->email->to('info@siddhrans.in'); // admin email
-    $this->email->subject('New User Registration');
+    $this->email->subject('Registration Successful');
     $this->email->message("New user registered:\n\nFirst Name: $firstname\nLast Name: $lastname\nEmail: $email\nPhone: $phone");
 
     if ($this->email->send()) {
@@ -88,6 +90,6 @@ class Auth extends CI_Controller
       log_message('error', "Failed to notify admin: " . $this->email->print_debugger());
     }
 
-    echo "Registration successful! Confirmation sent to user and admin notified.";
+    echo "Registration successful!.";
   }
 }
