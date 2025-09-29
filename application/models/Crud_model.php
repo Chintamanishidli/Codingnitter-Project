@@ -15,120 +15,120 @@ class Crud_model extends CI_Model
         $this->output->set_header('Pragma: no-cache');
     }
 
-    
-
-
-public function get_report_by_range($start_date, $end_date)
-{
-    $admin_id = $this->session->userdata('admin_id'); // Get admin ID from session
-
-    $this->db->where('date >=', $start_date);
-    $this->db->where('date <=', $end_date);
-    $this->db->where('posted_by', $admin_id); // Filter by posted_by matching admin_id
-    $query = $this->db->get('happy_story');
-    return $query->result();
-}
 
 
 
+    public function get_report_by_range($start_date, $end_date)
+    {
+        $admin_id = $this->session->userdata('admin_id'); // Get admin ID from session
 
-public function update_story($id, $data)
-{
-    $this->db->where('happy_story_id', $id);
-    $updated = $this->db->update('happy_story', $data);
-
-    // Debug: check affected rows
-    if ($this->db->affected_rows() > 0) {
-        return true;
-    } else {
-        return false;
+        $this->db->where('date >=', $start_date);
+        $this->db->where('date <=', $end_date);
+        $this->db->where('posted_by', $admin_id); // Filter by posted_by matching admin_id
+        $query = $this->db->get('happy_story');
+        return $query->result();
     }
-}
+
+
+
+
+    public function update_story($id, $data)
+    {
+        $this->db->where('happy_story_id', $id);
+        $updated = $this->db->update('happy_story', $data);
+
+        // Debug: check affected rows
+        if ($this->db->affected_rows() > 0) {
+            return true;
+        } else {
+            return false;
+        }
+    }
 
 
     public function get_legion_and_area_by_admin($admin_id)
-{
-    log_message('debug', 'Method invoked: get_legion_and_area_by_admin | Admin ID: ' . $admin_id);
-    $session_data = $this->session->userdata();
-    log_message('debug', 'Full Session Data: ' . print_r($session_data, true));
+    {
+        log_message('debug', 'Method invoked: get_legion_and_area_by_admin | Admin ID: ' . $admin_id);
+        $session_data = $this->session->userdata();
+        log_message('debug', 'Full Session Data: ' . print_r($session_data, true));
 
-    try {
-        // Check if admin_id exists in admin_legion table
-        $this->db->select('legion_id');
-        $this->db->from('admin_legion');
-        $this->db->where('admin_id', $admin_id);
-        $query = $this->db->get();
+        try {
+            // Check if admin_id exists in admin_legion table
+            $this->db->select('legion_id');
+            $this->db->from('admin_legion');
+            $this->db->where('admin_id', $admin_id);
+            $query = $this->db->get();
 
-        if ($query->num_rows() === 0) {
-            $message = 'No legion assigned to this admin.';
-            log_message('debug', 'Admin ID ' . $admin_id . ' => ' . $message);
-            return ['status' => false, 'message' => $message];
+            if ($query->num_rows() === 0) {
+                $message = 'No legion assigned to this admin.';
+                log_message('debug', 'Admin ID ' . $admin_id . ' => ' . $message);
+                return ['status' => false, 'message' => $message];
+            }
+
+            $legion_id = $query->row()->legion_id;
+            log_message('debug', 'Fetched legion_id: ' . $legion_id . ' for admin_id: ' . $admin_id);
+
+            // Fetch legion and area details using joins
+            $this->db->select('legions.id as legion_id, legions.name AS legion_name, areas.name AS area_name');
+            $this->db->from('legions');
+            $this->db->join('areas', 'legions.area_id = areas.id', 'left');
+            $this->db->where('legions.id', $legion_id);
+            $legion_query = $this->db->get();
+
+            if ($legion_query->num_rows() === 0) {
+                $message = 'Legion or area details not found.';
+                log_message('debug', 'Legion ID ' . $legion_id . ' => ' . $message);
+                return ['status' => false, 'message' => $message];
+            }
+
+            $result = $legion_query->row();
+            log_message('debug', 'Legion ID: ' . $result->legion_id . ', Legion Name: ' . $result->legion_name . ', Area Name: ' . $result->area_name);
+
+            return [
+                'status' => true,
+                'legion_id' => $result->legion_id,
+                'legion_name' => $result->legion_name,
+                'area_name' => $result->area_name
+            ];
+        } catch (Exception $e) {
+            log_message('error', 'Exception in get_legion_and_area_by_admin: ' . $e->getMessage());
+            return [
+                'status' => false,
+                'message' => 'An unexpected error occurred while retrieving legion and area details.'
+            ];
         }
-
-        $legion_id = $query->row()->legion_id;
-        log_message('debug', 'Fetched legion_id: ' . $legion_id . ' for admin_id: ' . $admin_id);
-
-        // Fetch legion and area details using joins
-        $this->db->select('legions.id as legion_id, legions.name AS legion_name, areas.name AS area_name');
-        $this->db->from('legions');
-        $this->db->join('areas', 'legions.area_id = areas.id', 'left');
-        $this->db->where('legions.id', $legion_id);
-        $legion_query = $this->db->get();
-
-        if ($legion_query->num_rows() === 0) {
-            $message = 'Legion or area details not found.';
-            log_message('debug', 'Legion ID ' . $legion_id . ' => ' . $message);
-            return ['status' => false, 'message' => $message];
-        }
-
-        $result = $legion_query->row();
-        log_message('debug', 'Legion ID: ' . $result->legion_id . ', Legion Name: ' . $result->legion_name . ', Area Name: ' . $result->area_name);
-
-        return [
-            'status' => true,
-            'legion_id' => $result->legion_id,
-            'legion_name' => $result->legion_name,
-            'area_name' => $result->area_name
-        ];
-    } catch (Exception $e) {
-        log_message('error', 'Exception in get_legion_and_area_by_admin: ' . $e->getMessage());
-        return [
-            'status' => false,
-            'message' => 'An unexpected error occurred while retrieving legion and area details.'
-        ];
     }
-}
 
 
     public function get_legions_by_area($area_id)
     {
         return $this->db->select('id, name')
-                        ->from('legions')
-                        ->where('area_id', $area_id)
-                        ->order_by('name', 'ASC')
-                        ->get()
-                        ->result_array();
+            ->from('legions')
+            ->where('area_id', $area_id)
+            ->order_by('name', 'ASC')
+            ->get()
+            ->result_array();
     }
-    
 
-    
+
+
 
     ////////////  GET THE  AREA  AND THE LEGION //////
     public function get_areas_with_legions()
     {
-        $this->db->select('areas.id as area_id, areas.name as area_name, legions.id as legion_id, legions.name as legion_name');
+        $this->db->select('areas.id as area_id, areas.name as area_name, legions.id as legion_id, legions.name as legion_name, legions.short as legion_short');
         $this->db->from('areas');
         $this->db->join('legions', 'legions.area_id = areas.id', 'left');
         $query = $this->db->get();
         $result = $query->result();
-    
+
         log_message('debug', 'DB query result count: ' . count($result));
-    
+        log_message('debug', 'Query Result: ' . print_r($result, true));
         $areas = [];
-    
+
         foreach ($result as $row) {
-            log_message('debug', 'Processing row: area_id=' . $row->area_id . ', legion_id=' . $row->legion_id);
-    
+            log_message('debug', 'Processing row: area_id=' . $row->area_id . ', legion_id=' . $row->legion_id,);
+
             $area_id = $row->area_id;
             if (!isset($areas[$area_id])) {
                 $areas[$area_id] = [
@@ -138,41 +138,44 @@ public function update_story($id, $data)
                 ];
                 log_message('debug', "New area added: ID {$area_id}, Name {$row->area_name}");
             }
-    
+
             if ($row->legion_id) {
                 $areas[$area_id]['legions'][] = [
                     'id' => $row->legion_id,
-                    'name' => $row->legion_name
+                    'name' => $row->legion_name,
+                    'short' => $row->legion_short
+
                 ];
                 log_message('debug', "Added legion to area {$area_id}: Legion ID {$row->legion_id}, Name {$row->legion_name}");
             }
         }
-    
+
         log_message('debug', 'Final areas array: ' . print_r($areas, true));
-    
+
         return array_values($areas); // Reset keys to numeric
     }
-    
+
 
     // In Crud_model.php
-        public function get_all_areas()
-        {
+    public function get_all_areas()
+    {
 
-            
-            return $this->db->select('id, name')
-                            ->from('areas')
-                            ->order_by('name', 'ASC')
-                            ->get()
-                            ->result_array();
-        }
+
+        return $this->db->select('id, name')
+            ->from('areas')
+            ->order_by('name', 'ASC')
+            ->get()
+            ->result_array();
+    }
 
 
     /////// INSETST LEGION //////
-    public function insert_legion($data) {
+    public function insert_legion($data)
+    {
 
-          log_message('debug', 'insert_legion methos invoked ' , print_r($data, true ));
+        log_message('debug', 'insert_legion methos invoked ', print_r($data, true));
 
-        if (!isset($data['name']) || !isset($data['area_id'])) {
+        if (!isset($data['name']) || !isset($data['area_id']) || !isset($data['short'])) {
             return false; // simple validation
         }
 
@@ -180,16 +183,17 @@ public function update_story($id, $data)
         // return  $data;
     }
 
-    public function insert_area($data) {
+    public function insert_area($data)
+    {
         log_message('debug', 'insert_area method invoked with data: ' . print_r($data, true));
-    
+
         if (!isset($data['name'])) {
             return false; // simple validation: area must have a name
         }
-    
+
         // Insert area data into 'areas' table
         $insert = $this->db->insert('areas', $data);
-    
+
         if ($insert) {
             // Return inserted ID if needed
             return $this->db->insert_id();
@@ -197,7 +201,7 @@ public function update_story($id, $data)
             return false;
         }
     }
-    
+
 
     /////////GET NAME BY TABLE NAME AND ID/////////////
     function get_type_name_by_id($type, $type_id = '', $field = 'name')
@@ -231,8 +235,8 @@ public function update_story($id, $data)
     // FILE_UPLOAD
     function img_thumb($type, $id, $ext = '.jpg', $width = '400', $height = '400')
     {
-        ini_set('display_errors',1);
-	      error_reporting(E_ALL);
+        ini_set('display_errors', 1);
+        error_reporting(E_ALL);
         $this->load->library('image_lib');
         ini_set("memory_limit", "-1");
 
@@ -241,8 +245,8 @@ public function update_story($id, $data)
         $config1['maintain_ratio'] = TRUE;
         $config1['width']          = $width;
         $config1['height']         = $height;
-        $config1['source_image']   = 'uploads/' . $type . '_image/' . $type . '_' . $id.'_thumb' . $ext;
-    //echo '<pre>';print_r($config1);exit;
+        $config1['source_image']   = 'uploads/' . $type . '_image/' . $type . '_' . $id . '_thumb' . $ext;
+        //echo '<pre>';print_r($config1);exit;
         $this->image_lib->initialize($config1);
         $this->image_lib->resize();
         $this->image_lib->clear();
@@ -297,11 +301,9 @@ public function update_story($id, $data)
                 } elseif ($src == 'src') {
                     return $srcl;
                 }
+            } else {
+                return base_url() . 'uploads/' . $type . '_image/male_default.jpg';
             }
-            else{
-                return base_url() . 'uploads/'. $type.'_image/male_default.jpg';
-            }
-
         } else if ($multi == 'multi') {
             $num    = $this->Crud_model->get_type_name_by_id($type, $id, 'num_of_imgs');
             //$num = 2;
@@ -330,7 +332,6 @@ public function update_story($id, $data)
                         break;
                     }
                 }
-
             }
             if (!empty($return)) {
                 if ($multi_num == 'one') {
@@ -344,11 +345,11 @@ public function update_story($id, $data)
                 }
             } else {
                 if ($multi_num == 'one') {
-                    return base_url() . 'uploads/'. $type.'_image/male_default.jpg';
+                    return base_url() . 'uploads/' . $type . '_image/male_default.jpg';
                 } else if ($multi_num == 'all') {
-                    return array(base_url() . 'uploads/'. $type.'_image/male_default.jpg');
+                    return array(base_url() . 'uploads/' . $type . '_image/male_default.jpg');
                 } else {
-                    return array(base_url() . 'uploads/'. $type.'_image/male_default.jpg');
+                    return array(base_url() . 'uploads/' . $type . '_image/male_default.jpg');
                 }
             }
         }
@@ -365,7 +366,6 @@ public function update_story($id, $data)
             if (file_exists("uploads/" . $type . "_image/" . $type . "_" . $id . "_thumb" . $ext)) {
                 unlink("uploads/" . $type . "_image/" . $type . "_" . $id . "_thumb" . $ext);
             }
-
         } else if ($multi == 'multi') {
             $num = $this->Crud_model->get_type_name_by_id($type, $id, 'num_of_imgs');
             if ($m_sin == '') {
@@ -421,9 +421,9 @@ public function update_story($id, $data)
     }
 
     //GET PRODUCT LINK
-    function product_link($product_id,$quick='')
+    function product_link($product_id, $quick = '')
     {
-        if($quick=='quick'){
+        if ($quick == 'quick') {
             return base_url() . 'index.php/home/quick_view/' . $product_id;
         } else {
             $name = url_title($this->Crud_model->get_type_name_by_id('product', $product_id, 'title'));
@@ -446,12 +446,12 @@ public function update_story($id, $data)
     }
 
     /////////GET CHOICE TITLE////////
-    function choice_title_by_name($product,$name)
+    function choice_title_by_name($product, $name)
     {
         $return = '';
-        $options = json_encode($this->get_type_name_by_id('product',$product_id,'options'),true);
+        $options = json_encode($this->get_type_name_by_id('product', $product_id, 'options'), true);
         foreach ($options as $row) {
-            if($row['name'] == $name){
+            if ($row['name'] == $name) {
                 $return = $row['title'];
             }
         }
@@ -459,7 +459,7 @@ public function update_story($id, $data)
     }
 
     /////////SELECT HTML/////////////
-    function select_html($from, $name, $field, $type, $class, $e_match = '', $condition = '', $c_match = '', $onchange = '',$condition_type='single')
+    function select_html($from, $name, $field, $type, $class, $e_match = '', $condition = '', $c_match = '', $onchange = '', $condition_type = 'single')
     {
         $return = '';
         $other  = '';
@@ -481,12 +481,12 @@ public function update_story($id, $data)
             if ($condition == '') {
                 $all = $this->db->get($from)->result_array();
             } else if ($condition !== '') {
-                if($condition_type=='single'){
+                if ($condition_type == 'single') {
                     $all = $this->db->get_where($from, array(
                         $condition => $c_match
                     ))->result_array();
-                }else if($condition_type=='multi'){
-                    $this->db->where_in($condition,$c_match);
+                } else if ($condition_type == 'multi') {
+                    $this->db->where_in($condition, $c_match);
                     $all = $this->db->get($from)->result_array();
                 }
             }
@@ -497,21 +497,19 @@ public function update_story($id, $data)
                 if ($type == 'add') {
                     $return .= '<option value="' . $row[$from . '_id'] . '">' . $row[$field] . '</option>';
                 } else if ($type == 'edit') {
-                  
+
                     $return .= '<option value="' . $row[$from . '_id'] . '" ';
-                    
+
                     if ($multi == 'no') {
-                        
+
                         if ($row[$from . '_id'] == $e_match) {
                             $return .= 'selected=."selected"';
                         }
-                        
+
                         // elseif ($row[$from . '_name'] == $e_match) {
                         //     $return .= 'selected=."selected"';
                         // }
-                    }
-
-                    else if ($multi == 'yes') {
+                    } else if ($multi == 'yes') {
                         if (in_array($row[$from . '_id'], $e_match)) {
                             $return .= 'selected=."selected"';
                         }
@@ -567,7 +565,6 @@ public function update_story($id, $data)
         } else {
             return $ret;
         }
-
     }
 
     //FORM FIELDS
@@ -652,11 +649,11 @@ public function update_story($id, $data)
     function get_additional_fields($product_id)
     {
         $additional_fields = $this->Crud_model->get_type_name_by_id('product', $product_id, 'additional_fields');
-        $ab                = json_decode($additional_fields,true);
+        $ab                = json_decode($additional_fields, true);
         $name = json_decode($ab['name']);
         $value = json_decode($ab['value']);
         $final = array();
-        if(!empty($name)){
+        if (!empty($name)) {
             foreach ($name as $n => $row) {
                 $final[] = array(
                     'name' => $row,
@@ -739,8 +736,8 @@ public function update_story($id, $data)
                 'sale_datetime <= ' => time()
             ))->result_array();
             foreach ($result as $row) {
-                if($this->session->userdata('title') == 'admin'){
-                    if($this->sale_payment_status($row['sale_id'],'admin') == 'fully_paid'){
+                if ($this->session->userdata('title') == 'admin') {
+                    if ($this->sale_payment_status($row['sale_id'], 'admin') == 'fully_paid') {
                         //make version for vendor
                         $res_cat = $this->db->get_where('product', array(
                             'category' => $filter_val1
@@ -752,14 +749,14 @@ public function update_story($id, $data)
                         }
                     }
                 }
-                if($this->session->userdata('title') == 'vendor'){
-                    if($this->sale_payment_status($row['sale_id'],'vendor',$this->session->userdata('vendor_id')) == 'fully_paid'){
+                if ($this->session->userdata('title') == 'vendor') {
+                    if ($this->sale_payment_status($row['sale_id'], 'vendor', $this->session->userdata('vendor_id')) == 'fully_paid') {
                         //make version for vendor
                         $res_cat = $this->db->get_where('product', array(
                             'category' => $filter_val1
                         ))->result_array();
                         foreach ($res_cat as $row1) {
-                            if ($p = $this->vendor_share_in_sale($row['sale_id'],$this->session->userdata('vendor_id'),'paid')) {
+                            if ($p = $this->vendor_share_in_sale($row['sale_id'], $this->session->userdata('vendor_id'), 'paid')) {
                                 $p = $p['total'];
                                 $a += $p;
                             }
@@ -768,10 +765,10 @@ public function update_story($id, $data)
                 }
             }
         } else if ($type == 'stock') {
-            if($this->session->userdata('title') == 'admin'){
-                $this->db->get_where('added_by',json_encode(array('type'=>'vendor','id'=>$this->session->userdata('vendor_id'))));
-                $this->db->get_where('datetime >= ',$ago);
-                $this->db->get_where('datetime <= ',time());
+            if ($this->session->userdata('title') == 'admin') {
+                $this->db->get_where('added_by', json_encode(array('type' => 'vendor', 'id' => $this->session->userdata('vendor_id'))));
+                $this->db->get_where('datetime >= ', $ago);
+                $this->db->get_where('datetime <= ', time());
                 $result = $this->db->get('stock')->result_array();
                 foreach ($result as $row) {
                     if ($row[$filter2] == $filter_val2) {
@@ -787,7 +784,7 @@ public function update_story($id, $data)
                     }
                 }
             }
-            if($this->session->userdata('title') == 'vendor'){
+            if ($this->session->userdata('title') == 'vendor') {
                 $result = $this->db->get_where('stock', array(
                     'datetime >= ' => $ago,
                     'datetime <= ' => time()
@@ -810,9 +807,10 @@ public function update_story($id, $data)
         return $a;
     }
 
-    function email_invoice($sale_id){
+    function email_invoice($sale_id)
+    {
         $email = $this->get_type_name_by_id('user', $this->get_type_name_by_id('sale', $sale_id, 'buyer'), 'email');
-        $sale_code = '#'.$this->get_type_name_by_id('sale', $sale_id, 'sale_code');
+        $sale_code = '#' . $this->get_type_name_by_id('sale', $sale_id, 'sale_code');
         $from = $this->db->get_where('general_settings', array(
             'type' => 'system_email'
         ))->row()->value;
@@ -822,7 +820,7 @@ public function update_story($id, $data)
         $page_data['sale_id'] = $sale_id;
         $text = $this->load->view('front/shopping_cart/invoice_email', $page_data, TRUE);
         $this->email_model->do_email($from, $from_name, $email, $sale_code, $text);
-        $admins = $this->db->get_where('admin',array('role'=>'1'))->result_array();
+        $admins = $this->db->get_where('admin', array('role' => '1'))->result_array();
         foreach ($admins as $row) {
             $this->email_model->do_email($from, $from_name, $row['email'], $sale_code, $text);
         }
@@ -838,14 +836,14 @@ public function update_story($id, $data)
         }
     }
 
-    function is_added_by($type,$id,$user_id,$user_type = 'vendor')
+    function is_added_by($type, $id, $user_id, $user_type = 'vendor')
     {
-        $added_by = json_decode($this->db->get_where($type,array($type.'_id'=>$id))->row()->added_by,true);
-        if($user_type == 'admin'){
+        $added_by = json_decode($this->db->get_where($type, array($type . '_id' => $id))->row()->added_by, true);
+        if ($user_type == 'admin') {
             $user_id = $added_by['id'];
         }
         $this->benchmark->mark_time();
-        if($added_by['type'] == $user_type && $added_by['id'] == $user_id){
+        if ($added_by['type'] == $user_type && $added_by['id'] == $user_id) {
             return true;
         } else {
             return false;
@@ -853,71 +851,70 @@ public function update_story($id, $data)
     }
 
     //SALE WISE TOTAL BY TYPE
-    function provider_detail($type,$id='',$with_link='')
+    function provider_detail($type, $id = '', $with_link = '')
     {
-        if($type == 'admin'){
-            $name = $this->db->get_where('general_settings',array('type'=>'system_name'))->row()->value;
-            if($with_link == ''){
+        if ($type == 'admin') {
+            $name = $this->db->get_where('general_settings', array('type' => 'system_name'))->row()->value;
+            if ($with_link == '') {
                 return $name;
-            } else if($with_link == 'with_link') {
-                return '<a href="'.base_url().'">'.$name.'</a>';
+            } else if ($with_link == 'with_link') {
+                return '<a href="' . base_url() . '">' . $name . '</a>';
             }
-        } else if($type == 'vendor'){
-            $name = $this->db->get_where('vendor',array('vendor_id'=>$id))->row()->display_name;
-            if($with_link == ''){
+        } else if ($type == 'vendor') {
+            $name = $this->db->get_where('vendor', array('vendor_id' => $id))->row()->display_name;
+            if ($with_link == '') {
                 return $name;
-            } else if($with_link == 'with_link') {
-                return '<a href="'.$this->vendor_link($added_by['id']).'">'.$name.'</a>';
+            } else if ($with_link == 'with_link') {
+                return '<a href="' . $this->vendor_link($added_by['id']) . '">' . $name . '</a>';
             }
         }
     }
 
-    function sale_payment_status($sale_id,$type='',$id=''){
+    function sale_payment_status($sale_id, $type = '', $id = '')
+    {
         $payment_status = json_decode($this->db->get_where('sale', array(
             'sale_id' => $sale_id
-        ))->row()->payment_status,true);
+        ))->row()->payment_status, true);
         $paid = '';
         $unpaid = '';
         foreach ($payment_status as $row) {
-            if($type == ''){
-                if($row['status'] == 'paid'){
+            if ($type == '') {
+                if ($row['status'] == 'paid') {
                     $paid = 'yes';
                 }
-                if($row['status'] == 'due'){
+                if ($row['status'] == 'due') {
                     $unpaid = 'yes';
                 }
             } else {
-                if(isset($row[$type])){
-                    if($type == 'vendor'){
-                        if($row[$type] == $id){
-                            if($row['status'] == 'paid'){
+                if (isset($row[$type])) {
+                    if ($type == 'vendor') {
+                        if ($row[$type] == $id) {
+                            if ($row['status'] == 'paid') {
                                 $paid = 'yes';
                             }
-                            if($row['status'] == 'due'){
+                            if ($row['status'] == 'due') {
                                 $unpaid = 'yes';
                             }
                         }
-                    } else if($type == 'admin'){
-                        if($row['status'] == 'paid'){
+                    } else if ($type == 'admin') {
+                        if ($row['status'] == 'paid') {
                             $paid = 'yes';
                         }
-                        if($row['status'] == 'due'){
+                        if ($row['status'] == 'due') {
                             $unpaid = 'yes';
                         }
                     }
                 }
             }
         }
-        if($paid == 'yes' && $unpaid == ''){
+        if ($paid == 'yes' && $unpaid == '') {
             return 'fully_paid';
-        }
-        else if($paid == 'yes' && $unpaid == 'yes'){
+        } else if ($paid == 'yes' && $unpaid == 'yes') {
             return 'partially_paid';
-        }
-        else if($paid == '' && $unpaid == 'yes'){
+        } else if ($paid == '' && $unpaid == 'yes') {
             return 'due';
         }
-        if($paid == '' && $unpaid == ''){
+        if ($paid == '' && $unpaid == '') {
             return 'due';
         }
     }
@@ -926,7 +923,7 @@ public function update_story($id, $data)
     //GETTING ADMIN PERMISSION
     function admin_permission($codename)
     {
-       $admin_id   = $this->session->userdata('admin_id');
+        $admin_id   = $this->session->userdata('admin_id');
         $admin        = $this->db->get_where('admin', array(
             'admin_id' => $admin_id
         ))->row();
@@ -972,7 +969,7 @@ public function update_story($id, $data)
     //GETTING IP DATA OF PEOPLE BROWSING THE SYSTEM
     function ip_data()
     {
-        if(!$this->input->is_ajax_request()){
+        if (!$this->input->is_ajax_request()) {
             $this->session->set_userdata('timestamp', time());
             $user_data = $this->session->userdata('surfer_info');
             $ip        = $_SERVER['REMOTE_ADDR'];
@@ -986,100 +983,83 @@ public function update_story($id, $data)
     }
 
 
-    function seo_stat($type='') {
+    function seo_stat($type = '')
+    {
         try {
             $url = base_url();
             $seostats = new \SEOstats\SEOstats;
             if ($seostats->setUrl($url)) {
 
-                if($type == 'facebook'){
+                if ($type == 'facebook') {
                     return SEOstats\Services\Social::getFacebookShares();
-                }
-                elseif ($type == 'gplus') {
+                } elseif ($type == 'gplus') {
                     return SEOstats\Services\Social::getGooglePlusShares();
-                }
-                elseif ($type == 'twitter') {
+                } elseif ($type == 'twitter') {
                     return SEOstats\Services\Social::getTwitterShares();
-                }
-                elseif ($type == 'linkedin') {
+                } elseif ($type == 'linkedin') {
                     return SEOstats\Services\Social::getLinkedInShares();
-                }
-                elseif ($type == 'pinterest') {
+                } elseif ($type == 'pinterest') {
                     return SEOstats\Services\Social::getPinterestShares();
-                }
-
-                elseif ($type == 'alexa_global') {
+                } elseif ($type == 'alexa_global') {
                     return SEOstats\Services\Alexa::getGlobalRank();
-                }
-                elseif ($type == 'alexa_country') {
+                } elseif ($type == 'alexa_country') {
                     return SEOstats\Services\Alexa::getCountryRank();
-                }
-
-                elseif ($type == 'alexa_bounce') {
+                } elseif ($type == 'alexa_bounce') {
                     return SEOstats\Services\Alexa::getTrafficGraph(5);
-                }
-                elseif ($type == 'alexa_time') {
+                } elseif ($type == 'alexa_time') {
                     return SEOstats\Services\Alexa::getTrafficGraph(4);
-                }
-                elseif ($type == 'alexa_traffic') {
+                } elseif ($type == 'alexa_traffic') {
                     return SEOstats\Services\Alexa::getTrafficGraph(1);
-                }
-                elseif ($type == 'alexa_pageviews') {
+                } elseif ($type == 'alexa_pageviews') {
                     return SEOstats\Services\Alexa::getTrafficGraph(2);
-                }
-
-                elseif ($type == 'google_siteindex') {
+                } elseif ($type == 'google_siteindex') {
                     return SEOstats\Services\Google::getSiteindexTotal();
-                }
-                elseif ($type == 'google_back') {
+                } elseif ($type == 'google_back') {
                     return SEOstats\Services\Google::getBacklinksTotal();
-                }
-                elseif ($type == 'search_graph_1') {
+                } elseif ($type == 'search_graph_1') {
                     return SEOstats\Services\SemRush::getDomainGraph(1);
-                }
-                elseif ($type == 'search_graph_2') {
+                } elseif ($type == 'search_graph_2') {
                     return SEOstats\Services\SemRush::getDomainGraph(2);
                 }
-
             }
-        }
-        catch(\Exception $e) {
+        } catch (\Exception $e) {
             echo 'Caught SEOstatsException: ' . $e->getMessage();
         }
     }
 
 
-    function ticket_unread_messages($ticket_id,$user_type){
+    function ticket_unread_messages($ticket_id, $user_type)
+    {
         $count = 0;
-        if($ticket_id !== 'all'){
-            $msgs  = $this->db->get_where('ticket_message',array('ticket_id'=>$ticket_id))->result_array();
-        } else if($ticket_id == 'all'){
+        if ($ticket_id !== 'all') {
+            $msgs  = $this->db->get_where('ticket_message', array('ticket_id' => $ticket_id))->result_array();
+        } else if ($ticket_id == 'all') {
             $msgs  = $this->db->get('ticket_message')->result_array();
         }
-        foreach($msgs as $row){
-            $status = json_decode($row['view_status'],true);
-            foreach($status as $type => $row1){
-                if($type == $user_type.'_show'){
-                    if($row1 == 'no'){
+        foreach ($msgs as $row) {
+            $status = json_decode($row['view_status'], true);
+            foreach ($status as $type => $row1) {
+                if ($type == $user_type . '_show') {
+                    if ($row1 == 'no') {
                         $count++;
                     }
                 }
             }
         }
         return $count;
-
     }
 
-    function ticket_message_viewed($ticket_id,$user_type){
+    function ticket_message_viewed($ticket_id, $user_type)
+    {
 
-        $msgs  = $this->db->get_where('ticket_message',array('ticket_id'=>$ticket_id))->result_array();
-        foreach($msgs as $row){
-            $status = json_decode($row['view_status'],true);
+        $msgs  = $this->db->get_where('ticket_message', array('ticket_id' => $ticket_id))->result_array();
+        foreach ($msgs as $row) {
+            $status = json_decode($row['view_status'], true);
             $new_status = array();
-            foreach($status as $type=>$row1){
-                if($type == $user_type.'_show'){
+            foreach ($status as $type => $row1) {
+                if ($type == $user_type . '_show') {
                     $new_status[$type] =  'ok';
-                } else{
+                } else {
                     $new_status[$type] =  $row1;
                 }
             }
@@ -1088,9 +1068,21 @@ public function update_story($id, $data)
             $this->db->update('ticket_message', array(
                 'view_status' => $view_status
             ));
-
         }
+    }
 
+    function get_role_name($role_id)
+    {
+        $this->db->select('name');
+        $this->db->from('role');
+        $this->db->where('role_id', $role_id);
+        $query = $this->db->get();
+
+        if ($query->num_rows() > 0) {
+            return $query->row()->name; // return the role name
+        } else {
+            return false; // role not found
+        }
     }
 
     function check_login($table, $username, $password)
@@ -1108,47 +1100,41 @@ public function update_story($id, $data)
 
     function alldata_count($table)
     {
-        if(!empty($this->session->userdata('earning_status'))){
+        if (!empty($this->session->userdata('earning_status'))) {
             $state = $this->session->userdata('earning_status');
-            if($state == 'paid' || $state == 'due'){
-                $this->db->where($table.'.payment_status', $state);
+            if ($state == 'paid' || $state == 'due') {
+                $this->db->where($table . '.payment_status', $state);
             }
         }
         $query = $this->db->get($table);
         return $query->num_rows();
     }
 
-    function alldatas($table,$limit,$start,$col,$dir)
+    function alldatas($table, $limit, $start, $col, $dir)
     {
-        $query = $this->db->limit($limit,$start)->order_by($col,$dir)->get($table);
-        if($query->num_rows()>0)
-        {
+        $query = $this->db->limit($limit, $start)->order_by($col, $dir)->get($table);
+        if ($query->num_rows() > 0) {
             return $query->result();
-        }
-        else
-        {
+        } else {
             return null;
         }
     }
 
-    function data_search($table,$limit,$start,$search,$col,$dir)
+    function data_search($table, $limit, $start, $search, $col, $dir)
     {
-        $query = $this->db->like($table.'_id',$search)->or_like('name',$search)->limit($limit,$start)->order_by($col,$dir)->get($table);
+        $query = $this->db->like($table . '_id', $search)->or_like('name', $search)->limit($limit, $start)->order_by($col, $dir)->get($table);
 
 
-        if($query->num_rows()>0)
-        {
+        if ($query->num_rows() > 0) {
             return $query->result();
-        }
-        else
-        {
+        } else {
             return null;
         }
     }
 
-    function data_search_count($table,$search)
+    function data_search_count($table, $search)
     {
-        $query = $this->db->like($table.'_id',$search)->or_like('name',$search)->get($table);
+        $query = $this->db->like($table . '_id', $search)->or_like('name', $search)->get($table);
 
         return $query->num_rows();
     }
@@ -1158,61 +1144,112 @@ public function update_story($id, $data)
     //     $query = $this->db->get_where("member", array("membership" => $membership))->result();
     //     return count($query);
     // }
-    
+
+
+
+
+
+
+
+
+
+
+
+
+    // public function get_area_by_admin($admin_id)
+    // {
+    //     $this->db->select('area_id');
+    //     $this->db->from('admin_area');
+    //     $this->db->where('admin_id', $admin_id);
+    //     $query = $this->db->get();
+
+    //     if ($query->num_rows() > 0) {
+    //         return $query->row(); // returns first matching row
+    //     } else {
+    //         return false; // no record found
+    //     }
+    // }
+    public function get_role_by_admin($admin_id)
+    {
+        $this->db->select('role.name AS role_name');
+        $this->db->from('admin');
+        $this->db->join('role', 'role.role_id = admin.role_id', 'left');
+        $this->db->where('admin.admin_id', $admin_id);
+        $query = $this->db->get();
+
+        if ($query->num_rows() > 0) {
+            return $query->row(); // returns object with ->role_name
+        } else {
+            return false;
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     function allmembers_count($membership)
     {
-        if(!empty($this->session->userdata('free_member_status_type')) && $membership == 1){
-            if($this->session->userdata('free_member_status_type') == 'groom'){
-                $this->db->where('gender',1);
-            }else if($this->session->userdata('free_member_status_type') == 'bride'){
-                $this->db->where('gender',2);
+        if (!empty($this->session->userdata('free_member_status_type')) && $membership == 1) {
+            if ($this->session->userdata('free_member_status_type') == 'groom') {
+                $this->db->where('gender', 1);
+            } else if ($this->session->userdata('free_member_status_type') == 'bride') {
+                $this->db->where('gender', 2);
             }
 
-            if(!empty($this->session->userdata('free_filter_status')) && $membership == 1){
-                if($this->session->userdata('free_filter_status') == 'approved'){
+            if (!empty($this->session->userdata('free_filter_status')) && $membership == 1) {
+                if ($this->session->userdata('free_filter_status') == 'approved') {
                     $this->db->where('status', 'approved');
-                }else if($this->session->userdata('free_filter_status') == 'pending'){
+                } else if ($this->session->userdata('free_filter_status') == 'pending') {
                     $this->db->where('status', 'pending');
-                }            
+                }
             }
 
-            if(!empty($this->session->userdata('free_member_profile_image')) && $membership == 1){
-                if($this->session->userdata('free_member_profile_image') == 'default'){
+            if (!empty($this->session->userdata('free_member_profile_image')) && $membership == 1) {
+                if ($this->session->userdata('free_member_profile_image') == 'default') {
                     $this->db->not_like('profile_image', '"profile_image":"male_default.jpg"');
                     $this->db->not_like('profile_image', '"profile_image":"female_default.png"');
-                }           
+                }
             }
-           
-        }
-        else if(!empty($this->session->userdata('premium_member_status_type')) && $membership == 2){
-            if($this->session->userdata('premium_member_status_type') == 'groom'){
-                $this->db->where('gender',1);
-            }else if($this->session->userdata('premium_member_status_type') == 'bride'){
-                $this->db->where('gender',2);
+        } else if (!empty($this->session->userdata('premium_member_status_type')) && $membership == 2) {
+            if ($this->session->userdata('premium_member_status_type') == 'groom') {
+                $this->db->where('gender', 1);
+            } else if ($this->session->userdata('premium_member_status_type') == 'bride') {
+                $this->db->where('gender', 2);
             }
         }
 
-        if(!empty($this->session->userdata('premium_filter_status')) && $membership == 2){
-            if($this->session->userdata('premium_filter_status') == 'approved'){
+        if (!empty($this->session->userdata('premium_filter_status')) && $membership == 2) {
+            if ($this->session->userdata('premium_filter_status') == 'approved') {
                 $this->db->where('status', 'approved');
-            }else if($this->session->userdata('premium_filter_status') == 'pending'){
+            } else if ($this->session->userdata('premium_filter_status') == 'pending') {
                 $this->db->where('status', 'pending');
-            }            
+            }
         }
 
-        if(!empty($this->session->userdata('premium_member_profile_image')) && $membership == 2){
-                if($this->session->userdata('premium_member_profile_image') == 'default'){
-                    $this->db->not_like('profile_image', '"profile_image":"male_default.jpg"');
-                    $this->db->not_like('profile_image', '"profile_image":"female_default.png"');
-                }           
+        if (!empty($this->session->userdata('premium_member_profile_image')) && $membership == 2) {
+            if ($this->session->userdata('premium_member_profile_image') == 'default') {
+                $this->db->not_like('profile_image', '"profile_image":"male_default.jpg"');
+                $this->db->not_like('profile_image', '"profile_image":"female_default.png"');
             }
-        
+        }
+
         $query = $this->db->get_where("member", array("membership" => $membership))->result();
         return count($query);
     }
 
-    
-    
+
+
 
     // function allmembers($membership,$limit,$start,$col,$dir)
     // {
@@ -1234,7 +1271,7 @@ public function update_story($id, $data)
         if ($admin_id != 1) {
             $this->db->select('area_id');
             $area_query = $this->db->get_where('admin_area', ['admin_id' => $admin_id]);
-        
+
             if ($area_query->num_rows() > 0) {
                 // Admin has assigned areas
                 $area_ids = array_column($area_query->result_array(), 'area_id');
@@ -1243,7 +1280,7 @@ public function update_story($id, $data)
                 // Step 2: Check admin_legions
                 $this->db->select('legion_id');
                 $legion_query = $this->db->get_where('admin_legion', ['admin_id' => $admin_id]);
-        
+
                 if ($legion_query->num_rows() > 0) {
                     $legion_ids = array_column($legion_query->result_array(), 'legion_id');
                     $this->db->where_in('legion_id', $legion_ids);
@@ -1253,12 +1290,11 @@ public function update_story($id, $data)
                     return [];
                 }
             }
-        
         }
         // // Step 1: Check admin_areas
         // $this->db->select('area_id');
         // $area_query = $this->db->get_where('admin_area', ['admin_id' => $admin_id]);
-    
+
         // if ($area_query->num_rows() > 0) {
         //     // Admin has assigned areas
         //     $area_ids = array_column($area_query->result_array(), 'area_id');
@@ -1267,7 +1303,7 @@ public function update_story($id, $data)
         //     // Step 2: Check admin_legions
         //     $this->db->select('legion_id');
         //     $legion_query = $this->db->get_where('admin_legions', ['admin_id' => $admin_id]);
-    
+
         //     if ($legion_query->num_rows() > 0) {
         //         $legion_ids = array_column($legion_query->result_array(), 'legion_id');
         //         $this->db->where_in('legion_id', $legion_ids);
@@ -1277,19 +1313,19 @@ public function update_story($id, $data)
         //         return [];
         //     }
         // }
-    
+
         // Step 3: Membership condition
         $this->db->where('membership', $member_type);
-    
+
         // ===== Apply session-based filters here =====
-    
+
         if (!empty($this->session->userdata('free_member_status_type')) && $member_type == 1) {
             if ($this->session->userdata('free_member_status_type') == 'groom') {
                 $this->db->where('gender', 1);
             } else if ($this->session->userdata('free_member_status_type') == 'bride') {
                 $this->db->where('gender', 2);
             }
-    
+
             if (!empty($this->session->userdata('free_filter_status'))) {
                 if ($this->session->userdata('free_filter_status') == 'approved') {
                     $this->db->where('status', 'approved');
@@ -1297,21 +1333,20 @@ public function update_story($id, $data)
                     $this->db->where('status', 'pending');
                 }
             }
-    
+
             if (!empty($this->session->userdata('free_member_profile_image'))) {
                 if ($this->session->userdata('free_member_profile_image') == 'default') {
                     $this->db->not_like('profile_image', 'male_default.jpg');
                     $this->db->not_like('profile_image', 'female_default.png');
                 }
             }
-    
         } else if (!empty($this->session->userdata('premium_member_status_type')) && $member_type == 2) {
             if ($this->session->userdata('premium_member_status_type') == 'groom') {
                 $this->db->where('gender', 1);
             } else if ($this->session->userdata('premium_member_status_type') == 'bride') {
                 $this->db->where('gender', 2);
             }
-    
+
             if (!empty($this->session->userdata('premium_filter_status'))) {
                 if ($this->session->userdata('premium_filter_status') == 'approved') {
                     $this->db->where('status', 'approved');
@@ -1319,7 +1354,7 @@ public function update_story($id, $data)
                     $this->db->where('status', 'pending');
                 }
             }
-    
+
             if (!empty($this->session->userdata('premium_member_profile_image'))) {
                 if ($this->session->userdata('premium_member_profile_image') == 'default') {
                     $this->db->not_like('profile_image', 'male_default.jpg');
@@ -1327,16 +1362,16 @@ public function update_story($id, $data)
                 }
             }
         }
-    
+
         // Step 4: Apply limit, offset, ordering
         $this->db->limit($limit, $start);
         $this->db->order_by($order, $dir);
-    
+
         // Step 5: Execute query
         $query = $this->db->get('member');
-    
+
         $result = $query->result();
-    
+
         // Step 6: Prepare log data (first 5 members, only selected fields)
         $log_data = array_map(function ($member) {
             return [
@@ -1352,21 +1387,21 @@ public function update_story($id, $data)
         // log_message('info', 'Fetched members for admin_id ' . $admin_id . ': ' . json_encode($log_data));
 
         log_message('info', 'Fetched members for admin_id ' . $admin_id . ': ' . json_encode($log_data));
-    
+
         return $query;
     }
-    
-    
+
+
 
 
     function allmembers($membership, $limit, $start, $col, $dir)
-    {   
+    {
         $admin_id = $this->session->userdata('admin_id');
         log_message('info', 'Admin ID from session: ' . $admin_id);
-    
+
         // $members =
-    
-        
+
+
         // if(!empty($this->session->userdata('free_member_status_type')) && $membership == 1){
         //     if($this->session->userdata('free_member_status_type') == 'groom'){
         //         $this->db->where('gender',1);
@@ -1412,27 +1447,24 @@ public function update_story($id, $data)
         //         }           
         //     }
         // }
-        
+
         // $query = $this->db->limit($limit,$start)->order_by($col,$dir)->get_where("member", array("membership" => $membership));
         $query = $this->get_members_by_admin_scope($membership, $limit, $start, $col, $dir, $admin_id);
-        if($query->num_rows()>0)
-        {
+        if ($query->num_rows() > 0) {
             return $query->result();
-        }
-        else
-        {
+        } else {
             return null;
         }
     }
-    
+
     // function allmembers($membership, $limit, $start, $col, $dir)
     // {   
     //     $admin_id = $this->session->userdata('admin_id');
     //     log_message('info', 'Admin ID from session: ' . $admin_id);
-    
+
     //     $members = $this->get_members_by_admin_scope($membership, $limit, $start, $col, $dir, $admin_id);
-    
-        
+
+
     //     if(!empty($this->session->userdata('free_member_status_type')) && $membership == 1){
     //         if($this->session->userdata('free_member_status_type') == 'groom'){
     //             $this->db->where('gender',1);
@@ -1478,7 +1510,7 @@ public function update_story($id, $data)
     //             }           
     //         }
     //     }
-        
+
     //     $query = $this->db->limit($limit,$start)->order_by($col,$dir)->get_where("member", array("membership" => $membership));
     //     if($query->num_rows()>0)
     //     {
@@ -1489,133 +1521,128 @@ public function update_story($id, $data)
     //         return null;
     //     }
     // }
-    
- function members_search($membership,$limit,$start,$search,$col,$dir)
+
+    function members_search($membership, $limit, $start, $search, $col, $dir)
     {
-        $this->db->limit($limit,$start);
-        $this->db->order_by($col,$dir);
-        $this->db->where('membership',$membership);
-        
+        $this->db->limit($limit, $start);
+        $this->db->order_by($col, $dir);
+        $this->db->where('membership', $membership);
+
         $this->db->group_start();
-        $this->db->like('percentage', $search,'after');
+        $this->db->like('percentage', $search, 'after');
         $this->db->or_like('member_id', $search);
         $this->db->or_like('first_name', $search);
         $this->db->or_like('last_name', $search);
         $this->db->or_like('member_profile_id', $search);
         $this->db->group_end();
-        
+
         // $this->db->where("(member_id LIKE '%$search%' OR first_name LIKE '%$search%' OR last_name LIKE '%$search%' OR member_profile_id LIKE '%$search%')");
-        
-        if(!empty($this->session->userdata('free_member_status_type')) && $membership == 1){
-            if($this->session->userdata('free_member_status_type') == 'groom'){
-                $this->db->where('gender',1);
-            }else if($this->session->userdata('free_member_status_type') == 'bride'){
-                $this->db->where('gender',2);
+
+        if (!empty($this->session->userdata('free_member_status_type')) && $membership == 1) {
+            if ($this->session->userdata('free_member_status_type') == 'groom') {
+                $this->db->where('gender', 1);
+            } else if ($this->session->userdata('free_member_status_type') == 'bride') {
+                $this->db->where('gender', 2);
             }
 
-            if(!empty($this->session->userdata('free_filter_status')) && $membership == 1){
-                if($this->session->userdata('free_filter_status') == 'approved'){
+            if (!empty($this->session->userdata('free_filter_status')) && $membership == 1) {
+                if ($this->session->userdata('free_filter_status') == 'approved') {
                     $this->db->where('status', 'approved');
-                }else if($this->session->userdata('free_filter_status') == 'pending'){
+                } else if ($this->session->userdata('free_filter_status') == 'pending') {
                     $this->db->where('status', 'pending');
-                }            
+                }
             }
 
-            if(!empty($this->session->userdata('free_member_profile_image')) && $membership == 1){
-                if($this->session->userdata('free_member_profile_image') == 'default'){
+            if (!empty($this->session->userdata('free_member_profile_image')) && $membership == 1) {
+                if ($this->session->userdata('free_member_profile_image') == 'default') {
                     $this->db->not_like('profile_image', '"profile_image":"male_default.jpg"');
                     $this->db->not_like('profile_image', '"profile_image":"female_default.png"');
-                }           
+                }
             }
-        }
-        else if(!empty($this->session->userdata('premium_member_status_type')) && $membership == 2){
-            if($this->session->userdata('premium_member_status_type') == 'groom'){
-                $this->db->where('gender',1);
-            }else if($this->session->userdata('premium_member_status_type') == 'bride'){
-                $this->db->where('gender',2);
+        } else if (!empty($this->session->userdata('premium_member_status_type')) && $membership == 2) {
+            if ($this->session->userdata('premium_member_status_type') == 'groom') {
+                $this->db->where('gender', 1);
+            } else if ($this->session->userdata('premium_member_status_type') == 'bride') {
+                $this->db->where('gender', 2);
             }
 
-            if(!empty($this->session->userdata('premium_filter_status')) && $membership == 2){
-                if($this->session->userdata('premium_filter_status') == 'approved'){
+            if (!empty($this->session->userdata('premium_filter_status')) && $membership == 2) {
+                if ($this->session->userdata('premium_filter_status') == 'approved') {
                     $this->db->where('status', 'approved');
-                }else if($this->session->userdata('premium_filter_status') == 'pending'){
+                } else if ($this->session->userdata('premium_filter_status') == 'pending') {
                     $this->db->where('status', 'pending');
-                }            
+                }
             }
 
-            if(!empty($this->session->userdata('premium_member_profile_image')) && $membership == 2){
-                if($this->session->userdata('premium_member_profile_image') == 'default'){
+            if (!empty($this->session->userdata('premium_member_profile_image')) && $membership == 2) {
+                if ($this->session->userdata('premium_member_profile_image') == 'default') {
                     $this->db->not_like('profile_image', '"profile_image":"male_default.jpg"');
                     $this->db->not_like('profile_image', '"profile_image":"female_default.png"');
-                }           
+                }
             }
         }
-        
-        
+
+
         $query = $this->db->get('member');
 
-        if($query->num_rows()>0)
-        {
+        if ($query->num_rows() > 0) {
             return $query->result();
-        }
-        else
-        {
+        } else {
             return null;
         }
     }
 
 
-  function members_search_count($membership,$search)
+    function members_search_count($membership, $search)
     {
-        if(!empty($this->session->userdata('free_member_status_type')) && $membership == 1){
-            if($this->session->userdata('free_member_status_type') == 'groom'){
-                $this->db->where('gender',1);
-            }else if($this->session->userdata('free_member_status_type') == 'bride'){
-                $this->db->where('gender',2);
+        if (!empty($this->session->userdata('free_member_status_type')) && $membership == 1) {
+            if ($this->session->userdata('free_member_status_type') == 'groom') {
+                $this->db->where('gender', 1);
+            } else if ($this->session->userdata('free_member_status_type') == 'bride') {
+                $this->db->where('gender', 2);
             }
 
-            if(!empty($this->session->userdata('free_filter_status')) && $membership == 1){
-                if($this->session->userdata('free_filter_status') == 'approved'){
+            if (!empty($this->session->userdata('free_filter_status')) && $membership == 1) {
+                if ($this->session->userdata('free_filter_status') == 'approved') {
                     $this->db->where('status', 'approved');
-                }else if($this->session->userdata('free_filter_status') == 'pending'){
+                } else if ($this->session->userdata('free_filter_status') == 'pending') {
                     $this->db->where('status', 'pending');
-                }            
+                }
             }
 
-            if(!empty($this->session->userdata('free_member_profile_image')) && $membership == 1){
-                if($this->session->userdata('free_member_profile_image') == 'default'){
+            if (!empty($this->session->userdata('free_member_profile_image')) && $membership == 1) {
+                if ($this->session->userdata('free_member_profile_image') == 'default') {
                     $this->db->not_like('profile_image', '"profile_image":"male_default.jpg"');
                     $this->db->not_like('profile_image', '"profile_image":"female_default.png"');
-                }           
+                }
             }
-        }
-        else if(!empty($this->session->userdata('premium_member_status_type')) && $membership == 2){
-            if($this->session->userdata('premium_member_status_type') == 'groom'){
-                $this->db->where('gender',1);
-            }else if($this->session->userdata('premium_member_status_type') == 'bride'){
-                $this->db->where('gender',2);
+        } else if (!empty($this->session->userdata('premium_member_status_type')) && $membership == 2) {
+            if ($this->session->userdata('premium_member_status_type') == 'groom') {
+                $this->db->where('gender', 1);
+            } else if ($this->session->userdata('premium_member_status_type') == 'bride') {
+                $this->db->where('gender', 2);
             }
 
-            if(!empty($this->session->userdata('premium_filter_status')) && $membership == 2){
-                if($this->session->userdata('premium_filter_status') == 'approved'){
+            if (!empty($this->session->userdata('premium_filter_status')) && $membership == 2) {
+                if ($this->session->userdata('premium_filter_status') == 'approved') {
                     $this->db->where('status', 'approved');
-                }else if($this->session->userdata('premium_filter_status') == 'pending'){
+                } else if ($this->session->userdata('premium_filter_status') == 'pending') {
                     $this->db->where('status', 'pending');
-                }            
+                }
             }
 
-            if(!empty($this->session->userdata('premium_member_profile_image')) && $membership == 2){
-                if($this->session->userdata('premium_member_profile_image') == 'default'){
+            if (!empty($this->session->userdata('premium_member_profile_image')) && $membership == 2) {
+                if ($this->session->userdata('premium_member_profile_image') == 'default') {
                     $this->db->not_like('profile_image', '"profile_image":"male_default.jpg"');
                     $this->db->not_like('profile_image', '"profile_image":"female_default.png"');
-                }           
+                }
             }
         }
-        
-        $this->db->where('membership',$membership);
-        
+
+        $this->db->where('membership', $membership);
+
         $this->db->group_start();
-        $this->db->like('percentage', $search,'after');
+        $this->db->like('percentage', $search, 'after');
         $this->db->or_like('member_id', $search);
         $this->db->or_like('first_name', $search);
         $this->db->or_like('last_name', $search);
@@ -1626,7 +1653,7 @@ public function update_story($id, $data)
         $query = $this->db->get('member');
 
         return $query->num_rows();
-    }   
+    }
 
     function all_deleted_members_count($membership)
     {
@@ -1634,37 +1661,31 @@ public function update_story($id, $data)
         return count($query);
     }
 
-    function all_deleted_members($membership,$limit,$start,$col,$dir)
+    function all_deleted_members($membership, $limit, $start, $col, $dir)
     {
-        $query = $this->db->limit($limit,$start)->order_by($col,$dir)->get("deleted_member");
-        if($query->num_rows()>0)
-        {
+        $query = $this->db->limit($limit, $start)->order_by($col, $dir)->get("deleted_member");
+        if ($query->num_rows() > 0) {
             return $query->result();
-        }
-        else
-        {
+        } else {
             return null;
         }
     }
 
-    function deleted_members_search($membership,$limit,$start,$search,$col,$dir)
+    function deleted_members_search($membership, $limit, $start, $search, $col, $dir)
     {
-        $this->db->limit($limit,$start);
-        $this->db->order_by($col,$dir);
+        $this->db->limit($limit, $start);
+        $this->db->order_by($col, $dir);
         $this->db->where("(member_id LIKE '%$search%' OR first_name LIKE '%$search%' OR last_name LIKE '%$search%' OR member_profile_id LIKE '%$search%')");
         $query = $this->db->get('deleted_member');
 
-        if($query->num_rows()>0)
-        {
+        if ($query->num_rows() > 0) {
             return $query->result();
-        }
-        else
-        {
+        } else {
             return null;
         }
     }
 
-    function deleted_members_search_count($membership,$search)
+    function deleted_members_search_count($membership, $search)
     {
         $this->db->where("(member_id LIKE '%$search%' OR first_name LIKE '%$search%' OR last_name LIKE '%$search%' OR member_profile_id LIKE '%$search%')");
         $query = $this->db->get('deleted_member');
@@ -1672,48 +1693,42 @@ public function update_story($id, $data)
         return $query->num_rows();
     }
 
-    function allstates($table,$limit,$start,$col,$dir)
+    function allstates($table, $limit, $start, $col, $dir)
     {
-        $this->db->select(''.$table.'.'.$table.'_id, '.$table.'.name, country.name AS country_name', FALSE);
+        $this->db->select('' . $table . '.' . $table . '_id, ' . $table . '.name, country.name AS country_name', FALSE);
         $this->db->from($table);
-        $this->db->join('country', 'country.country_id = '.$table.'.country_id', 'left');
-        $this->db->limit($limit,$start)->order_by($col,$dir);
+        $this->db->join('country', 'country.country_id = ' . $table . '.country_id', 'left');
+        $this->db->limit($limit, $start)->order_by($col, $dir);
         $query = $this->db->get();
 
-        if($query->num_rows()>0)
-        {
+        if ($query->num_rows() > 0) {
             return $query->result();
-        }
-        else
-        {
+        } else {
             return null;
         }
     }
 
-    function state_search($table,$limit,$start,$search,$col,$dir)
+    function state_search($table, $limit, $start, $search, $col, $dir)
     {
-        $this->db->select(''.$table.'.'.$table.'_id, '.$table.'.name, country.name AS country_name', FALSE);
+        $this->db->select('' . $table . '.' . $table . '_id, ' . $table . '.name, country.name AS country_name', FALSE);
         $this->db->from($table);
-        $this->db->join('country', 'country.country_id = '.$table.'.country_id', 'left');
-        $this->db->like($table.'_id',$search)->or_like($table.'.name',$search)->or_like('country.name',$search)->limit($limit,$start)->order_by($col,$dir);
+        $this->db->join('country', 'country.country_id = ' . $table . '.country_id', 'left');
+        $this->db->like($table . '_id', $search)->or_like($table . '.name', $search)->or_like('country.name', $search)->limit($limit, $start)->order_by($col, $dir);
         $query = $this->db->get();
 
-        if($query->num_rows()>0)
-        {
+        if ($query->num_rows() > 0) {
             return $query->result();
-        }
-        else
-        {
+        } else {
             return null;
         }
     }
 
-    function state_search_count($table,$search)
+    function state_search_count($table, $search)
     {
-        $this->db->select(''.$table.'.'.$table.'_id, '.$table.'.name, country.name AS country_name', FALSE);
+        $this->db->select('' . $table . '.' . $table . '_id, ' . $table . '.name, country.name AS country_name', FALSE);
         $this->db->from($table);
-        $this->db->join('country', 'country.country_id = '.$table.'.country_id', 'left');
-        $this->db->like($table.'_id',$search)->or_like($table.'.name',$search)->or_like('country.name',$search);
+        $this->db->join('country', 'country.country_id = ' . $table . '.country_id', 'left');
+        $this->db->like($table . '_id', $search)->or_like($table . '.name', $search)->or_like('country.name', $search);
         $query = $this->db->get();
 
         return $query->num_rows();
@@ -1721,165 +1736,146 @@ public function update_story($id, $data)
 
 
 
-    function allcastes($table,$limit,$start,$col,$dir)
+    function allcastes($table, $limit, $start, $col, $dir)
     {
-        $this->db->select(''.$table.'.'.$table.'_id, '.$table.'.caste_name, religion.name AS religion_name', FALSE);
+        $this->db->select('' . $table . '.' . $table . '_id, ' . $table . '.caste_name, religion.name AS religion_name', FALSE);
         $this->db->from($table);
-        $this->db->join('religion', 'religion.religion_id = '.$table.'.religion_id', 'left');
-        $this->db->limit($limit,$start)->order_by($col,$dir);
+        $this->db->join('religion', 'religion.religion_id = ' . $table . '.religion_id', 'left');
+        $this->db->limit($limit, $start)->order_by($col, $dir);
         $query = $this->db->get();
 
-        if($query->num_rows()>0)
-        {
+        if ($query->num_rows() > 0) {
             return $query->result();
-        }
-        else
-        {
+        } else {
             return null;
         }
     }
 
-    function caste_search($table,$limit,$start,$search,$col,$dir)
+    function caste_search($table, $limit, $start, $search, $col, $dir)
     {
-        $this->db->select(''.$table.'.'.$table.'_id, '.$table.'.caste_name, religion.name AS religion_name', FALSE);
+        $this->db->select('' . $table . '.' . $table . '_id, ' . $table . '.caste_name, religion.name AS religion_name', FALSE);
         $this->db->from($table);
-        $this->db->join('religion', 'religion.religion_id = '.$table.'.religion_id', 'left');
-        $this->db->like($table.'_id',$search)->or_like($table.'.caste_name',$search)->or_like('religion.name',$search)->limit($limit,$start)->order_by($col,$dir);
+        $this->db->join('religion', 'religion.religion_id = ' . $table . '.religion_id', 'left');
+        $this->db->like($table . '_id', $search)->or_like($table . '.caste_name', $search)->or_like('religion.name', $search)->limit($limit, $start)->order_by($col, $dir);
         $query = $this->db->get();
 
-        if($query->num_rows()>0)
-        {
+        if ($query->num_rows() > 0) {
             return $query->result();
-        }
-        else
-        {
+        } else {
             return null;
         }
     }
 
-    function caste_search_count($table,$search)
+    function caste_search_count($table, $search)
     {
-        $this->db->select(''.$table.'.'.$table.'_id, '.$table.'.caste_name, religion.name AS religion_name', FALSE);
+        $this->db->select('' . $table . '.' . $table . '_id, ' . $table . '.caste_name, religion.name AS religion_name', FALSE);
         $this->db->from($table);
-        $this->db->join('religion', 'religion.religion_id = '.$table.'.religion_id', 'left');
-        $this->db->like($table.'_id',$search)->or_like($table.'.caste_name',$search)->or_like('religion.name',$search);
+        $this->db->join('religion', 'religion.religion_id = ' . $table . '.religion_id', 'left');
+        $this->db->like($table . '_id', $search)->or_like($table . '.caste_name', $search)->or_like('religion.name', $search);
         $query = $this->db->get();
 
         return $query->num_rows();
     }
 
-    function allsub_castes($table,$limit,$start,$col,$dir)
+    function allsub_castes($table, $limit, $start, $col, $dir)
     {
-        $this->db->select(''.$table.'.'.$table.'_id, '.$table.'.sub_caste_name, caste.caste_name, religion.name AS religion_name', FALSE);
+        $this->db->select('' . $table . '.' . $table . '_id, ' . $table . '.sub_caste_name, caste.caste_name, religion.name AS religion_name', FALSE);
         $this->db->from($table);
-        $this->db->join('caste', 'caste.caste_id = '.$table.'.caste_id', 'left');
+        $this->db->join('caste', 'caste.caste_id = ' . $table . '.caste_id', 'left');
         $this->db->join('religion', 'religion.religion_id = caste.religion_id', 'left');
-        $this->db->limit($limit,$start)->order_by($col,$dir);
+        $this->db->limit($limit, $start)->order_by($col, $dir);
         $query = $this->db->get();
 
-        if($query->num_rows()>0)
-        {
+        if ($query->num_rows() > 0) {
             return $query->result();
-        }
-        else
-        {
+        } else {
             return null;
         }
     }
 
-    function sub_caste_search($table,$limit,$start,$search,$col,$dir)
+    function sub_caste_search($table, $limit, $start, $search, $col, $dir)
     {
-        $this->db->select(''.$table.'.'.$table.'_id, '.$table.'.sub_caste_name, caste.caste_name AS caste_name, religion.name AS religion_name', FALSE);
+        $this->db->select('' . $table . '.' . $table . '_id, ' . $table . '.sub_caste_name, caste.caste_name AS caste_name, religion.name AS religion_name', FALSE);
         $this->db->from($table);
-         $this->db->join('caste', 'caste.caste_id = '.$table.'.caste_id', 'left');
+        $this->db->join('caste', 'caste.caste_id = ' . $table . '.caste_id', 'left');
         $this->db->join('religion', 'religion.religion_id = caste.religion_id', 'left');
-        $this->db->like($table.'_id',$search)->or_like($table.'.sub_caste_name',$search)->or_like('caste.caste_name',$search)->or_like('religion.name',$search)->limit($limit,$start)->order_by($col,$dir);
+        $this->db->like($table . '_id', $search)->or_like($table . '.sub_caste_name', $search)->or_like('caste.caste_name', $search)->or_like('religion.name', $search)->limit($limit, $start)->order_by($col, $dir);
         $query = $this->db->get();
 
-        if($query->num_rows()>0)
-        {
+        if ($query->num_rows() > 0) {
             return $query->result();
-        }
-        else
-        {
+        } else {
             return null;
         }
     }
 
-    function sub_caste_search_count($table,$search)
+    function sub_caste_search_count($table, $search)
     {
-        $this->db->select(''.$table.'.'.$table.'_id, '.$table.'.sub_caste_name, caste.caste_name AS caste_name, religion.name AS religion_name', FALSE);
+        $this->db->select('' . $table . '.' . $table . '_id, ' . $table . '.sub_caste_name, caste.caste_name AS caste_name, religion.name AS religion_name', FALSE);
         $this->db->from($table);
-        $this->db->join('caste', 'caste.caste_id = '.$table.'.caste_id', 'left');
+        $this->db->join('caste', 'caste.caste_id = ' . $table . '.caste_id', 'left');
         $this->db->join('religion', 'religion.religion_id = caste.religion_id', 'left');
-        $this->db->like($table.'_id',$search)->or_like($table.'.sub_caste_name',$search)->or_like('caste.caste_name',$search)->or_like('religion.name',$search);
+        $this->db->like($table . '_id', $search)->or_like($table . '.sub_caste_name', $search)->or_like('caste.caste_name', $search)->or_like('religion.name', $search);
         $query = $this->db->get();
 
         return $query->num_rows();
     }
 
-    function allcities($table,$limit,$start,$col,$dir)
+    function allcities($table, $limit, $start, $col, $dir)
     {
-        $this->db->select(''.$table.'.'.$table.'_id, '.$table.'.name, state.name AS state_name, country.name AS country_name', FALSE);
+        $this->db->select('' . $table . '.' . $table . '_id, ' . $table . '.name, state.name AS state_name, country.name AS country_name', FALSE);
         $this->db->from($table);
-        $this->db->join('state', 'state.state_id = '.$table.'.state_id', 'left');
+        $this->db->join('state', 'state.state_id = ' . $table . '.state_id', 'left');
         $this->db->join('country', 'country.country_id = state.country_id', 'left');
-        $this->db->limit($limit,$start)->order_by($col,$dir);
+        $this->db->limit($limit, $start)->order_by($col, $dir);
         $query = $this->db->get();
 
-        if($query->num_rows()>0)
-        {
+        if ($query->num_rows() > 0) {
             return $query->result();
-        }
-        else
-        {
+        } else {
             return null;
         }
     }
 
-    function city_search($table,$limit,$start,$search,$col,$dir)
+    function city_search($table, $limit, $start, $search, $col, $dir)
     {
-        $this->db->select(''.$table.'.'.$table.'_id, '.$table.'.name, state.name AS state_name, country.name AS country_name', FALSE);
+        $this->db->select('' . $table . '.' . $table . '_id, ' . $table . '.name, state.name AS state_name, country.name AS country_name', FALSE);
         $this->db->from($table);
-        $this->db->join('state', 'state.state_id = '.$table.'.state_id', 'left');
+        $this->db->join('state', 'state.state_id = ' . $table . '.state_id', 'left');
         $this->db->join('country', 'country.country_id = state.country_id', 'left');
-        $this->db->like($table.'_id',$search)->or_like($table.'.name',$search)->or_like('state.name',$search)->or_like('country.name',$search)->limit($limit,$start)->order_by($col,$dir);
+        $this->db->like($table . '_id', $search)->or_like($table . '.name', $search)->or_like('state.name', $search)->or_like('country.name', $search)->limit($limit, $start)->order_by($col, $dir);
         $query = $this->db->get();
 
-        if($query->num_rows()>0)
-        {
+        if ($query->num_rows() > 0) {
             return $query->result();
-        }
-        else
-        {
+        } else {
             return null;
         }
     }
 
-    function city_search_count($table,$search)
+    function city_search_count($table, $search)
     {
-        $this->db->select(''.$table.'.'.$table.'_id, '.$table.'.name, state.name AS state_name, country.name AS country_name', FALSE);
+        $this->db->select('' . $table . '.' . $table . '_id, ' . $table . '.name, state.name AS state_name, country.name AS country_name', FALSE);
         $this->db->from($table);
-        $this->db->join('state', 'state.state_id = '.$table.'.state_id', 'left');
+        $this->db->join('state', 'state.state_id = ' . $table . '.state_id', 'left');
         $this->db->join('country', 'country.country_id = state.country_id', 'left');
-        $this->db->like($table.'_id',$search)->or_like($table.'.name',$search)->or_like('state.name',$search)->or_like('country.name',$search);
+        $this->db->like($table . '_id', $search)->or_like($table . '.name', $search)->or_like('state.name', $search)->or_like('country.name', $search);
         $query = $this->db->get();
 
         return $query->num_rows();
     }
 
-function allearnings($table,$limit,$start,$col,$dir)
+    function allearnings($table, $limit, $start, $col, $dir)
     {
-        $this->db->select(''.$table.'.'.$table.'_id, '.$table.'.payment_type,'.$table.'.payment_status,'.$table.'.payment_details,'.$table.'.amount,'.$table.'.purchase_datetime,'.$table.'.custom_payment_method_name, plan.name AS package_name, member.first_name AS member_first_name, member.last_name AS member_last_name, IFNULL(plan.start_date, 0) AS start_date, IFNULL(plan.end_date, 0) AS end_date', FALSE);
+        $this->db->select('' . $table . '.' . $table . '_id, ' . $table . '.payment_type,' . $table . '.payment_status,' . $table . '.payment_details,' . $table . '.amount,' . $table . '.purchase_datetime,' . $table . '.custom_payment_method_name, plan.name AS package_name, member.first_name AS member_first_name, member.last_name AS member_last_name, IFNULL(plan.start_date, 0) AS start_date, IFNULL(plan.end_date, 0) AS end_date', FALSE);
         $this->db->from($table);
-        $this->db->join('plan', 'plan.plan_id = '.$table.'.plan_id', 'left');
-        $this->db->join('member', 'member.member_id = '.$table.'.member_id', 'left');
+        $this->db->join('plan', 'plan.plan_id = ' . $table . '.plan_id', 'left');
+        $this->db->join('member', 'member.member_id = ' . $table . '.member_id', 'left');
 
-        $this->db->limit($limit,$start)->order_by($col,$dir);
+        $this->db->limit($limit, $start)->order_by($col, $dir);
         $query = $this->db->get();
 
-        if($query->num_rows()>0)
-        {
+        if ($query->num_rows() > 0) {
             $results = $query->result();
 
             // Iterate over results to update payment_status based on purchase_datetime and start/end dates
@@ -1904,61 +1900,56 @@ function allearnings($table,$limit,$start,$col,$dir)
             // Filter results based on session earning_status filter
             $state = $this->session->userdata('earning_status') ?? 'all';
             if ($state == 'paid') {
-                $results = array_filter($results, function($row) {
+                $results = array_filter($results, function ($row) {
                     return $row->payment_status === 'paid';
                 });
             } elseif ($state == 'due') {
-                $results = array_filter($results, function($row) {
+                $results = array_filter($results, function ($row) {
                     return $row->payment_status === 'due';
                 });
             }
             // If 'all', no filtering
 
             return array_values($results); // Reindex array after filtering
-        }
-        else
-        {
+        } else {
             return null;
         }
     }
 
-function earning_search($table,$limit,$start,$search,$col,$dir)
+    function earning_search($table, $limit, $start, $search, $col, $dir)
     {
-        $this->db->select(''.$table.'.'.$table.'_id, '.$table.'.payment_type,'.$table.'.payment_status,'.$table.'.payment_details,'.$table.'.amount,'.$table.'.purchase_datetime,'.$table.'.custom_payment_method_name, plan.name AS package_name, member.first_name AS member_first_name, member.last_name AS member_last_name, IFNULL(plan.start_date, 0) AS start_date, IFNULL(plan.end_date, 0) AS end_date', FALSE);
+        $this->db->select('' . $table . '.' . $table . '_id, ' . $table . '.payment_type,' . $table . '.payment_status,' . $table . '.payment_details,' . $table . '.amount,' . $table . '.purchase_datetime,' . $table . '.custom_payment_method_name, plan.name AS package_name, member.first_name AS member_first_name, member.last_name AS member_last_name, IFNULL(plan.start_date, 0) AS start_date, IFNULL(plan.end_date, 0) AS end_date', FALSE);
 
         $this->db->from($table);
-        $this->db->join('plan', 'plan.plan_id = '.$table.'.plan_id', 'left');
-        $this->db->join('member', 'member.member_id = '.$table.'.member_id', 'left');
-        $this->db->like($table.'_id',$search)->or_like($table.'.payment_type',$search)->or_like($table.'.payment_status',$search)->or_like($table.'.amount',$search)->or_like('plan.name',$search)->or_like('member.first_name',$search)->or_like('member.last_name',$search)->limit($limit,$start)->order_by($col,$dir);
-        if(!empty($this->session->userdata('earning_status'))){
+        $this->db->join('plan', 'plan.plan_id = ' . $table . '.plan_id', 'left');
+        $this->db->join('member', 'member.member_id = ' . $table . '.member_id', 'left');
+        $this->db->like($table . '_id', $search)->or_like($table . '.payment_type', $search)->or_like($table . '.payment_status', $search)->or_like($table . '.amount', $search)->or_like('plan.name', $search)->or_like('member.first_name', $search)->or_like('member.last_name', $search)->limit($limit, $start)->order_by($col, $dir);
+        if (!empty($this->session->userdata('earning_status'))) {
             $state = $this->session->userdata('earning_status');
-            if($state == 'paid' || $state == 'due'){
-                $this->db->where($table.'.payment_status', $state);
+            if ($state == 'paid' || $state == 'due') {
+                $this->db->where($table . '.payment_status', $state);
             }
         }
         $query = $this->db->get();
 
-        if($query->num_rows()>0)
-        {
+        if ($query->num_rows() > 0) {
             return $query->result();
-        }
-        else
-        {
+        } else {
             return null;
         }
     }
 
-    function earning_search_count($table,$search)
+    function earning_search_count($table, $search)
     {
-        $this->db->select(''.$table.'.'.$table.'_id, '.$table.'.payment_type,'.$table.'.payment_status,'.$table.'.payment_details,'.$table.'.amount,'.$table.'.purchase_datetime,'.$table.'.custom_payment_method_name, plan.name AS package_name, member.first_name AS member_first_name, member.last_name AS member_last_name', FALSE);
+        $this->db->select('' . $table . '.' . $table . '_id, ' . $table . '.payment_type,' . $table . '.payment_status,' . $table . '.payment_details,' . $table . '.amount,' . $table . '.purchase_datetime,' . $table . '.custom_payment_method_name, plan.name AS package_name, member.first_name AS member_first_name, member.last_name AS member_last_name', FALSE);
         $this->db->from($table);
-        $this->db->join('plan', 'plan.plan_id = '.$table.'.plan_id', 'left');
-        $this->db->join('member', 'member.member_id = '.$table.'.member_id', 'left');
-        $this->db->like($table.'_id',$search)->or_like($table.'.payment_type',$search)->or_like($table.'.payment_status',$search)->or_like($table.'.amount',$search)->or_like('plan.name',$search)->or_like('member.first_name',$search)->or_like('member.last_name',$search);
-        if(!empty($this->session->userdata('earning_status'))){
+        $this->db->join('plan', 'plan.plan_id = ' . $table . '.plan_id', 'left');
+        $this->db->join('member', 'member.member_id = ' . $table . '.member_id', 'left');
+        $this->db->like($table . '_id', $search)->or_like($table . '.payment_type', $search)->or_like($table . '.payment_status', $search)->or_like($table . '.amount', $search)->or_like('plan.name', $search)->or_like('member.first_name', $search)->or_like('member.last_name', $search);
+        if (!empty($this->session->userdata('earning_status'))) {
             $state = $this->session->userdata('earning_status');
-            if($state == 'paid' || $state == 'due'){
-                $this->db->where($table.'.payment_status', $state);
+            if ($state == 'paid' || $state == 'due') {
+                $this->db->where($table . '.payment_status', $state);
             }
         }
         $query = $this->db->get();
@@ -1966,45 +1957,39 @@ function earning_search($table,$limit,$start,$search,$col,$dir)
         return $query->num_rows();
     }
 
-    function allcontact_messages($table,$limit,$start,$col,$dir)
+    function allcontact_messages($table, $limit, $start, $col, $dir)
     {
         $this->db->select('*', FALSE);
         $this->db->from($table);
-        $this->db->limit($limit,$start)->order_by($col,$dir);
+        $this->db->limit($limit, $start)->order_by($col, $dir);
         $query = $this->db->get();
 
-        if($query->num_rows()>0)
-        {
+        if ($query->num_rows() > 0) {
             return $query->result();
-        }
-        else
-        {
+        } else {
             return null;
         }
     }
 
-    function contact_message_search($table,$limit,$start,$search,$col,$dir)
+    function contact_message_search($table, $limit, $start, $search, $col, $dir)
     {
         $this->db->select('*', FALSE);
         $this->db->from($table);
-        $this->db->like($table.'_id',$search)->or_like($table.'.name',$search)->or_like($table.'.subject',$search)->limit($limit,$start)->order_by($col,$dir);
+        $this->db->like($table . '_id', $search)->or_like($table . '.name', $search)->or_like($table . '.subject', $search)->limit($limit, $start)->order_by($col, $dir);
         $query = $this->db->get();
 
-        if($query->num_rows()>0)
-        {
+        if ($query->num_rows() > 0) {
             return $query->result();
-        }
-        else
-        {
+        } else {
             return null;
         }
     }
 
-    function contact_message_search_count($table,$search)
+    function contact_message_search_count($table, $search)
     {
         $this->db->select('*', FALSE);
         $this->db->from($table);
-        $this->db->like($table.'_id',$search)->or_like($table.'.name',$search)->or_like($table.'.subject',$search);
+        $this->db->like($table . '_id', $search)->or_like($table . '.name', $search)->or_like($table . '.subject', $search);
         $query = $this->db->get();
 
         return $query->num_rows();
@@ -2013,55 +1998,51 @@ function earning_search($table,$limit,$start,$search,$col,$dir)
     function allstories($table, $limit, $start, $col, $dir)
     {
         $this->db->select(
-            $table . '.' . $table . '_id, ' . 
-            $table . '.title, ' . 
-            $table . '.date, ' .  // ✅ Added date here
-            $table . '.activity_photo, ' .   // changed here from image to activity_photo
-            $table . '.approval_status, ' . 
-            $table . '.post_time, ' . 
-            $table . '.partner_name, ' . 
-            $table . '.description, ' .  
-            'member.first_name AS member_name', FALSE);
-    
+            $table . '.' . $table . '_id, ' .
+                $table . '.title, ' .
+                $table . '.date, ' .  // ✅ Added date here
+                $table . '.activity_photo, ' .   // changed here from image to activity_photo
+                $table . '.approval_status, ' .
+                $table . '.post_time, ' .
+                $table . '.partner_name, ' .
+                $table . '.description, ' .
+                'member.first_name AS member_name',
+            FALSE
+        );
+
         $this->db->from($table);
-        $this->db->join('member', 'member.member_id = '.$table.'.posted_by', 'left');
+        $this->db->join('member', 'member.member_id = ' . $table . '.posted_by', 'left');
         $this->db->limit($limit, $start)->order_by($col, $dir);
         $query = $this->db->get();
-    
-        if($query->num_rows() > 0)
-        {
+
+        if ($query->num_rows() > 0) {
             return $query->result();
-        }
-        else
-        {
+        } else {
             return null;
         }
     }
-    
-    function story_search($table,$limit,$start,$search,$col,$dir)
+
+    function story_search($table, $limit, $start, $search, $col, $dir)
     {
-        $this->db->select(''.$table.'.'.$table.'_id, '.$table.'.title, '.$table.'.image, '.$table.'.approval_status, '.$table.'.post_time,'. $table.'.partner_name, member.first_name AS member_name', FALSE);
+        $this->db->select('' . $table . '.' . $table . '_id, ' . $table . '.title, ' . $table . '.image, ' . $table . '.approval_status, ' . $table . '.post_time,' . $table . '.partner_name, member.first_name AS member_name', FALSE);
         $this->db->from($table);
-        $this->db->join('member', 'member.member_id = '.$table.'.posted_by', 'left');
-        $this->db->like($table.'_id',$search)->or_like($table.'.title',$search)->or_like($table.'.partner_name',$search)->or_like('member.first_name',$search)->limit($limit,$start)->order_by($col,$dir);
+        $this->db->join('member', 'member.member_id = ' . $table . '.posted_by', 'left');
+        $this->db->like($table . '_id', $search)->or_like($table . '.title', $search)->or_like($table . '.partner_name', $search)->or_like('member.first_name', $search)->limit($limit, $start)->order_by($col, $dir);
         $query = $this->db->get();
 
-        if($query->num_rows()>0)
-        {
+        if ($query->num_rows() > 0) {
             return $query->result();
-        }
-        else
-        {
+        } else {
             return null;
         }
     }
 
-    function story_search_count($table,$search)
+    function story_search_count($table, $search)
     {
-        $this->db->select(''.$table.'.'.$table.'_id, '.$table.'.title, '.$table.'.image, '.$table.'.approval_status, '.$table.'.post_time,'. $table.'.partner_name, member.first_name AS member_name', FALSE);
+        $this->db->select('' . $table . '.' . $table . '_id, ' . $table . '.title, ' . $table . '.image, ' . $table . '.approval_status, ' . $table . '.post_time,' . $table . '.partner_name, member.first_name AS member_name', FALSE);
         $this->db->from($table);
-        $this->db->join('member', 'member.member_id = '.$table.'.posted_by', 'left');
-        $this->db->like($table.'_id',$search)->or_like($table.'.title',$search)->or_like($table.'.partner_name',$search)->or_like('member.first_name',$search);
+        $this->db->join('member', 'member.member_id = ' . $table . '.posted_by', 'left');
+        $this->db->like($table . '_id', $search)->or_like($table . '.title', $search)->or_like($table . '.partner_name', $search)->or_like('member.first_name', $search);
         $query = $this->db->get();
 
         return $query->num_rows();
@@ -2081,59 +2062,55 @@ function earning_search($table,$limit,$start,$search,$col,$dir)
             // $message_array2[] = $list2->list;
             $message_array2[] = array('message_thread_id' => $list2->message_thread_id, 'member_id' => $list2->list, 'message_thread_time' => $list2->message_thread_time);
         }
-        return $listed_messaging_members = array_unique (array_merge ($message_array1, $message_array2), SORT_REGULAR);
+        return $listed_messaging_members = array_unique(array_merge($message_array1, $message_array2), SORT_REGULAR);
     }
 
-    function allsite_language($table,$limit,$start,$col,$dir)
+    function allsite_language($table, $limit, $start, $col, $dir)
     {
-        $query = $this->db->limit($limit,$start)->order_by($col,$dir)->get($table);
-        if($query->num_rows()>0)
-        {
+        $query = $this->db->limit($limit, $start)->order_by($col, $dir)->get($table);
+        if ($query->num_rows() > 0) {
             return $query->result();
-        }
-        else
-        {
+        } else {
             return null;
         }
     }
 
-    function site_language_search($table,$limit,$start,$search,$col,$dir)
+    function site_language_search($table, $limit, $start, $search, $col, $dir)
     {
-        $query = $this->db->like('word',$search)->limit($limit,$start)->order_by($col,$dir)->get($table);
+        $query = $this->db->like('word', $search)->limit($limit, $start)->order_by($col, $dir)->get($table);
 
 
-        if($query->num_rows()>0)
-        {
+        if ($query->num_rows() > 0) {
             return $query->result();
-        }
-        else
-        {
+        } else {
             return null;
         }
     }
 
-    function site_language_search_count($table,$search)
+    function site_language_search_count($table, $search)
     {
-        $query = $this->db->like('word',$search)->get($table);
+        $query = $this->db->like('word', $search)->get($table);
 
         return $query->num_rows();
     }
 
-    function message_thread_member_position($thread_id,$member){
-        $from = $this->db->get_where('message_thread',array('message_thread_id'=>$thread_id,'message_thread_from'=>$member))->num_rows();
-        $to = $this->db->get_where('message_thread',array('message_thread_id'=>$thread_id,'message_thread_to'=>$member))->num_rows();
-        if($from > 0){
+    function message_thread_member_position($thread_id, $member)
+    {
+        $from = $this->db->get_where('message_thread', array('message_thread_id' => $thread_id, 'message_thread_from' => $member))->num_rows();
+        $to = $this->db->get_where('message_thread', array('message_thread_id' => $thread_id, 'message_thread_to' => $member))->num_rows();
+        if ($from > 0) {
             return 'from';
-        } else if($to > 0){
+        } else if ($to > 0) {
             return 'to';
         }
     }
 
-    function is_message_thread_seen($thread_id,$member){
-        $position = $this->message_thread_member_position($thread_id,$member);
-        $position_db_field = 'message_'.$position.'_seen';
+    function is_message_thread_seen($thread_id, $member)
+    {
+        $position = $this->message_thread_member_position($thread_id, $member);
+        $position_db_field = 'message_' . $position . '_seen';
         $seen = $this->db->get_where('message_thread', array('message_thread_id' => $thread_id))->row()->$position_db_field;
-        if($seen == 'yes'){
+        if ($seen == 'yes') {
             return true;
         }
         return false;
@@ -2141,70 +2118,66 @@ function earning_search($table,$limit,$start,$search,$col,$dir)
 
     function timezone()
     {
-        $timezone = $this->db->get_where('general_settings', array('type'=>'time_zone'))->row()->value;
-        if($timezone != NULL){
-            date_default_timezone_set ($timezone);
-        }else{
+        $timezone = $this->db->get_where('general_settings', array('type' => 'time_zone'))->row()->value;
+        if ($timezone != NULL) {
+            date_default_timezone_set($timezone);
+        } else {
             date_default_timezone_set('Asia/Dhaka');
         }
     }
 
-    function demo(){
-        if($this->config->item('demo') == 0 )
-        {
+    function demo()
+    {
+        if ($this->config->item('demo') == 0) {
             return 0;
-        }else{
+        } else {
             return 1;
         }
     }
 
 
-// ****************** Model Code Add 11-12-2020 **************************
+    // ****************** Model Code Add 11-12-2020 **************************
 
     // ****************** Member Filter Code Start **************************
 
     function filter_members_count($member_gender)
-        {
-            $query = $this->db->get_where("member", array('gender'=>$member_gender,'membership'=>1))->result();
-            return count($query);
-        }
+    {
+        $query = $this->db->get_where("member", array('gender' => $member_gender, 'membership' => 1))->result();
+        return count($query);
+    }
 
 
-    function filtered_all_gender_members($member_gender,$limit,$start,$col,$dir){
-        $query = $this->db->limit($limit,$start)->order_by($col,$dir)->get_where("member", array("gender" => $member_gender,'membership'=>1));
-        if($query->num_rows()>0)
-        {
+    function filtered_all_gender_members($member_gender, $limit, $start, $col, $dir)
+    {
+        $query = $this->db->limit($limit, $start)->order_by($col, $dir)->get_where("member", array("gender" => $member_gender, 'membership' => 1));
+        if ($query->num_rows() > 0) {
             return $query->result();
-        }
-        else
-        {
+        } else {
             return null;
         }
     }
 
-    function filtered_members_search($member_gender,$limit,$start,$search,$col,$dir){
-        $this->db->limit($limit,$start);
-        $this->db->order_by($col,$dir);
-        $this->db->where('gender',$member_gender);
-        $this->db->where('membership',1);
+    function filtered_members_search($member_gender, $limit, $start, $search, $col, $dir)
+    {
+        $this->db->limit($limit, $start);
+        $this->db->order_by($col, $dir);
+        $this->db->where('gender', $member_gender);
+        $this->db->where('membership', 1);
         // $this->db->where('status','approved');
         $this->db->where("(member_id LIKE '%$search%' OR first_name LIKE '%$search%' OR last_name LIKE '%$search%' OR member_profile_id LIKE '%$search%')");
         $query = $this->db->get('member');
 
-        if($query->num_rows()>0)
-        {
+        if ($query->num_rows() > 0) {
             return $query->result();
-        }
-        else
-        {
+        } else {
             return null;
         }
     }
 
-    function filtered_members_search_count($member_gender,$search)
+    function filtered_members_search_count($member_gender, $search)
     {
-        $this->db->where('gender',$member_gender);
-        $this->db->where('gender',$member_gender);
+        $this->db->where('gender', $member_gender);
+        $this->db->where('gender', $member_gender);
         $this->db->where("(member_id LIKE '%$search%' OR first_name LIKE '%$search%' OR last_name LIKE '%$search%' OR member_profile_id LIKE '%$search%')");
         $query = $this->db->get('member');
 
@@ -2213,37 +2186,33 @@ function earning_search($table,$limit,$start,$search,$col,$dir)
 
     function filter_free_members_count($member_type)
     {
-        $query = $this->db->get_where("member", array('membership'=>1))->result();
+        $query = $this->db->get_where("member", array('membership' => 1))->result();
         return count($query);
     }
 
-    function filtered_all_free_members($member_type,$limit,$start,$col,$dir){
-        $query = $this->db->limit($limit,$start)->order_by($col,$dir)->get_where("member", array('membership'=>1));
-        if($query->num_rows()>0)
-        {
+    function filtered_all_free_members($member_type, $limit, $start, $col, $dir)
+    {
+        $query = $this->db->limit($limit, $start)->order_by($col, $dir)->get_where("member", array('membership' => 1));
+        if ($query->num_rows() > 0) {
             return $query->result();
-        }
-        else
-        {
+        } else {
             return null;
         }
     }
 
-function filtered_free_members_search($member_type,$limit,$start,$search,$col,$dir){
-        $this->db->limit($limit,$start);
-        $this->db->order_by($col,$dir);
-        $this->db->where('membership',$member_type);
-        $this->db->where('membership',1);
-        $this->db->where('status','approved');
+    function filtered_free_members_search($member_type, $limit, $start, $search, $col, $dir)
+    {
+        $this->db->limit($limit, $start);
+        $this->db->order_by($col, $dir);
+        $this->db->where('membership', $member_type);
+        $this->db->where('membership', 1);
+        $this->db->where('status', 'approved');
         $this->db->where("(member_id LIKE '%$search%' OR first_name LIKE '%$search%' OR last_name LIKE '%$search%' OR member_profile_id LIKE '%$search%')");
         $query = $this->db->get('member');
 
-        if($query->num_rows()>0)
-        {
+        if ($query->num_rows() > 0) {
             return $query->result();
-        }
-        else
-        {
+        } else {
             return null;
         }
     }
@@ -2252,520 +2221,328 @@ function filtered_free_members_search($member_type,$limit,$start,$search,$col,$d
     // ************************** Export CSV Premium Members Details Starts *************************
 
     function filter_premium_members_count($member_gender)
-        {
-            $query = $this->db->get_where("member", array('gender'=>$member_gender,'membership'=>2, 'status' => 'approved'))->result();
-            return count($query);
-        }
+    {
+        $query = $this->db->get_where("member", array('gender' => $member_gender, 'membership' => 2, 'status' => 'approved'))->result();
+        return count($query);
+    }
 
-    function filtered_all_premium_gender_members($member_gender,$limit,$start,$col,$dir)
-        {
-            $query = $this->db->limit($limit,$start)->order_by($col,$dir)->get_where("member", array("gender" => $member_gender,'membership'=>2, 'status' => 'approved'));
-            if($query->num_rows()>0)
-            {
-                return $query->result();
-            }
-            else
-            {
-                return null;
-            }
+    function filtered_all_premium_gender_members($member_gender, $limit, $start, $col, $dir)
+    {
+        $query = $this->db->limit($limit, $start)->order_by($col, $dir)->get_where("member", array("gender" => $member_gender, 'membership' => 2, 'status' => 'approved'));
+        if ($query->num_rows() > 0) {
+            return $query->result();
+        } else {
+            return null;
         }
+    }
 
-    function filtered_premium_members_search($member_gender,$limit,$start,$search,$col,$dir){
-        $this->db->limit($limit,$start);
-        $this->db->order_by($col,$dir);
-        $this->db->where('gender',$member_gender);
-        $this->db->where('membership',2);
-        $this->db->where('status','approved');
+    function filtered_premium_members_search($member_gender, $limit, $start, $search, $col, $dir)
+    {
+        $this->db->limit($limit, $start);
+        $this->db->order_by($col, $dir);
+        $this->db->where('gender', $member_gender);
+        $this->db->where('membership', 2);
+        $this->db->where('status', 'approved');
         $this->db->where("(member_id LIKE '%$search%' OR first_name LIKE '%$search%' OR last_name LIKE '%$search%' OR member_profile_id LIKE '%$search%')");
         $query = $this->db->get('member');
 
-        if($query->num_rows()>0)
-        {
+        if ($query->num_rows() > 0) {
             return $query->result();
-        }
-        else
-        {
+        } else {
             return null;
         }
     }
 
-    function filtered_all_premium_members($member_type,$limit,$start,$col,$dir){
-        $query = $this->db->limit($limit,$start)->order_by($col,$dir)->get_where("member", array('membership'=>2));
-        if($query->num_rows()>0)
-        {
-            return $query->result();
-        }
-        else
-        {
-            return null;
-        }
-    }
-// ****************** Model Code Add 11-12-2020 **************************
-
-// Export CSV File code start(30-9-2021)
-    function get_groom_free_members(){
- 
-        $response = array();
-        $response = $this->db->select('*')->from('member')->where(array('membership'=>'1', 'status'=>'approved', 'gender' => '1'))->get()->result_array();
-        return $response;
-    }
-
-    function get_active_groom_free_members(){
- 
-        $response = array();
-        $response = $this->db->select('*')->from('member')->where(array('membership'=>'1', 'status'=>'approved', 'gender' => '1', 'is_closed' => 'no'))->get()->result_array();
-        return $response;
-    }
-    
-    function get_bride_free_members(){
- 
-        $response = array();
-        $response = $this->db->select('*')->from('member')->where(array('membership'=>'1', 'status'=>'approved', 'gender' => '2'))->get()->result_array();
-        return $response;
-    }
-
-    function get_active_bride_free_members(){
- 
-        $response = array();
-        $response = $this->db->select('*')->from('member')->where(array('membership'=>'1', 'status'=>'approved', 'gender' => '2', 'is_closed' => 'no'))->get()->result_array();
-        return $response;
-    }
-    
-    function get_free_members_for_csv(){
- 
-        $response = array();
-        $response = $this->db->select('*')->from('member')->where(array('membership'=>'1', 'status'=>'approved'))->get()->result_array();
-        return $response;
-    }
-
-    function get_active_free_members_for_csv(){
- 
-        $response = array();
-        $response = $this->db->select('*')->from('member')->where(array('membership'=>'1', 'status'=>'approved', 'is_closed' => 'no'))->get()->result_array();
-        return $response;
-    }
-    
-    function getPremiumGroomDetails(){
-     
-        $response = array();
-        $response = $this->db->select('*')->from('member')->where(array('membership'=>'2','status'=>'approved','gender'=>'1'))->get()->result_array();
-        return $response;
-    }
-
-    function getactivePremiumGroomDetails(){
-     
-        $response = array();
-        $response = $this->db->select('*')->from('member')->where(array('membership'=>'2','status'=>'approved','gender'=>'1', 'is_closed' => 'no'))->get()->result_array();
-        return $response;
-    }
-    
-    function getPremiumBrideDetails(){
- 
-        $response = array();
-        $response =  $this->db->select('*')->from('member')->where(array('membership'=>'2', 'status'=>'approved', 'gender' => '2'))->get()->result_array();
-        return $response;
-    }
-
-    function getactivePremiumBrideDetails(){
- 
-        $response = array();
-        $response =  $this->db->select('*')->from('member')->where(array('membership'=>'2', 'status'=>'approved', 'gender' => '2', 'is_closed' => 'no'))->get()->result_array();
-        return $response;
-    }
-    
-    function getPremiumUserDetails(){
- 
-        $response = array();
-        $response = $this->db->select('*')->from('member')->where(array('membership'=>'2', 'status'=>'approved'))->get()->result_array();
-        return $response;
-    }
-
-    function getactivePremiumUserDetails(){
- 
-        $response = array();
-        $response = $this->db->select('*')->from('member')->where(array('membership'=>'2', 'status'=>'approved','is_closed' => 'no'))->get()->result_array();
-        return $response;
-    }
-
-
-
-// code written by gowda
-function allmembers_starfilter($membership,$limit,$start,$col,$dir,$nakshatra,$nakshatra_gender)
-    { 
-         if($nakshatra){
-            if($nakshatra=='Ashwini Nakshatra')
-            {
-                $nakshtra_array=[1,2,27,6,13,7,15,9,10,11,12,21,4];
-            
-            }
-            else if($nakshatra=='Bharani Nakshatra')
-            {
-                $nakshtra_array=[12,5,26,7,8,19,12,13,20,22];
-            
-            }
-            else if($nakshatra=='Mrigasira Nakshatra')
-            {
-                $nakshtra_array=[27,3,5,7,9,19,12,14,21];
-            
-            }
-            else if($nakshatra=='Ardra Nakshatra')
-            {
-                $nakshtra_array=[27,3,5,9,12,14,25,23];
-            
-            }
-            else if($nakshatra=='Punarvasu Nakshatra')
-            {
-                $nakshtra_array=[1,26,27,3,4,5,6,8,10,12,13,15,17,19,22];
-            
-            }
-            else if($nakshatra=='Pushya Nakshatra')
-            {
-                $nakshtra_array=[4,6,7,9,11,13,14,18,20,25];
-            
-            }
-            else if($nakshatra=='Ashlesha Nakshatra')
-            {
-                $nakshtra_array=[1,8,10,14,17,19,21,24];
-            
-            }
-
-            else if($nakshatra=='Magha Nakshatra')
-            {
-                $nakshtra_array=[2,26,27,4,5,7,8,9,11,13,15,16,20,22];
-            
-            }
-
-            else if($nakshatra=='Purva Phalguni Nakshatra')
-            {
-                $nakshtra_array=[1,26,3,5,8,19,22,16,17,21];
-            
-            }
-
-            else if($nakshatra=='Uttara Phalguni Nakshatra')
-            {
-                $nakshtra_array=[1,2,27,4,11,13,15,20,22,24];
-            
-            }
-
-            else if($nakshatra=='Hasta Nakshatra')
-            {
-                $nakshtra_array=[3,5,11,12,14,16,18,19,21];
-            
-            }
-
-            else if($nakshatra=='Chitra Nakshatra')
-            {
-                $nakshtra_array=[12,27,4,10,11,13,15,17,20,22,24];
-            
-            }
-
-            else if($nakshatra=='Swati Nakshatra')
-            {
-                $nakshtra_array=[2,3,5,12,13,14,16,18,23,25];
-            
-            }
-
-            else if($nakshatra=='Vishakha Nakshatra')
-            {
-                $nakshtra_array=[1,2,27,3,4,6,8,15,17,21,22,24];
-            
-            }
-
-            else if($nakshatra=='Anuradha Nakshatra')
-            {
-                $nakshtra_array=[2,27,4,5,7,9,15,16,18,20,22,23,25];
-            
-            }
-
-            else if($nakshatra=='Jyeshtha Nakshatra')
-            {
-                $nakshtra_array=[26,10,21,23,24,27,3,5];
-            
-            }
-
-            else if($nakshatra=='Mula Nakshatra')
-            {
-                $nakshtra_array=[2,4,9,11,18,20,22];
-            
-            }
-
-            else if($nakshatra=='Purva Ashadha Nakshatra')
-            {
-                $nakshtra_array=[19,12,14,10,21,23,25];
-            
-            }
-
-            else if($nakshatra=='Uttara Ashadha Nakshatra')
-            {
-                $nakshtra_array=[1,27,4,6,8,9,11,13,15,17,20,22];
-            
-            }
-            else if($nakshatra=='Shravana Nakshatra')
-            {
-                $nakshtra_array=[2,26,3,5,7,9,12,14,16,19,20,21,23,25];
-            
-            }
-
-            else if($nakshatra=='Dhanishta Nakshatra')
-            {
-                $nakshtra_array=[1,26,27,4,6,8,19,11,13,15,17,10,20,21,23,25];
-            
-            }
-
-            else if($nakshatra=='Shatabhisha Nakshatra')
-            {
-                $nakshtra_array=[2,3,5,8,10,12,9,14,16,18,21,23,25];
-            
-            }
-
-            else if($nakshatra=='Purva Bhadra Nakshatra')
-            {
-                $nakshtra_array=[1,3,4,6,8,10,12,13,15,17];
-            
-            }
-            else if($nakshatra=='Uttara Bhadra Nakshatra')
-            {
-                $nakshtra_array=[2,27,4,5,8,9,11,13,14,16,20,18,25];
-            
-            }
-
-            else if($nakshatra=='Revati Nakshatra')
-            {
-                $nakshtra_array=[1,26,3,5,6,8,9,10,11,13,17,15];
-            
-            }
-            else if($nakshatra=='Krittika Nakshatra')
-            {
-                $nakshtra_array=[1,2,27,20,6,8,9,12,13,15,10,21];
-            
-            }
-
-            else if($nakshatra=='Rohini Nakshatra')
-            {
-                $nakshtra_array=[27,3,5,7,9,19,12,14,21];
-            
-            }
-
-        $q = $this->db
-        ->limit($limit,$start)
-        ->order_by($col,$dir)
-        ->select('*')
-        ->from('member')
-        ->join('nakshtramatch', 'member.nakshtra_id =nakshtra_match_id', 'inner')
-        ->where_in('nakshtramatch.nakshtra_match_id',$nakshtra_array)
-        ->where('membership', $membership)
-        ->where('gender <>', $nakshatra_gender)
-        ->get();
-        if( $q->num_rows() >0) 
-        {
-           
-        return $q->result();
-        }
-        else{
-       return null;
-         }
-         }
-        
-    }
-
-   function star_allmembers_count($member_type, $limit, $start, $order, $dir,$nakshatra,$nakshatra_gender)
+    function filtered_all_premium_members($member_type, $limit, $start, $col, $dir)
     {
-        if($nakshatra){
-            if($nakshatra=='Ashwini Nakshatra')
-            {
-                $nakshtra_array=[1,2,27,6,13,7,15,9,10,11,12,21,4];
-            
-            }
-            else if($nakshatra=='Bharani Nakshatra')
-            {
-                $nakshtra_array=[12,5,26,7,8,19,12,13,20,22];
-            
-            }
-            else if($nakshatra=='Mrigasira Nakshatra')
-            {
-                $nakshtra_array=[27,3,5,7,9,19,12,14,21];
-            
-            }
-            else if($nakshatra=='Ardra Nakshatra')
-            {
-                $nakshtra_array=[27,3,5,9,12,14,25,23];
-            
-            }
-            else if($nakshatra=='Punarvasu Nakshatra')
-            {
-                $nakshtra_array=[1,26,27,3,4,5,6,8,10,12,13,15,17,19,22];
-            
-            }
-            else if($nakshatra=='Pushya Nakshatra')
-            {
-                $nakshtra_array=[4,6,7,9,11,13,14,18,20,25];
-            
-            }
-            else if($nakshatra=='Ashlesha Nakshatra')
-            {
-                $nakshtra_array=[1,8,10,14,17,19,21,24];
-            
+        $query = $this->db->limit($limit, $start)->order_by($col, $dir)->get_where("member", array('membership' => 2));
+        if ($query->num_rows() > 0) {
+            return $query->result();
+        } else {
+            return null;
+        }
+    }
+    // ****************** Model Code Add 11-12-2020 **************************
+
+    // Export CSV File code start(30-9-2021)
+    function get_groom_free_members()
+    {
+
+        $response = array();
+        $response = $this->db->select('*')->from('member')->where(array('membership' => '1', 'status' => 'approved', 'gender' => '1'))->get()->result_array();
+        return $response;
+    }
+
+    function get_active_groom_free_members()
+    {
+
+        $response = array();
+        $response = $this->db->select('*')->from('member')->where(array('membership' => '1', 'status' => 'approved', 'gender' => '1', 'is_closed' => 'no'))->get()->result_array();
+        return $response;
+    }
+
+    function get_bride_free_members()
+    {
+
+        $response = array();
+        $response = $this->db->select('*')->from('member')->where(array('membership' => '1', 'status' => 'approved', 'gender' => '2'))->get()->result_array();
+        return $response;
+    }
+
+    function get_active_bride_free_members()
+    {
+
+        $response = array();
+        $response = $this->db->select('*')->from('member')->where(array('membership' => '1', 'status' => 'approved', 'gender' => '2', 'is_closed' => 'no'))->get()->result_array();
+        return $response;
+    }
+
+    function get_free_members_for_csv()
+    {
+
+        $response = array();
+        $response = $this->db->select('*')->from('member')->where(array('membership' => '1', 'status' => 'approved'))->get()->result_array();
+        return $response;
+    }
+
+    function get_active_free_members_for_csv()
+    {
+
+        $response = array();
+        $response = $this->db->select('*')->from('member')->where(array('membership' => '1', 'status' => 'approved', 'is_closed' => 'no'))->get()->result_array();
+        return $response;
+    }
+
+    function getPremiumGroomDetails()
+    {
+
+        $response = array();
+        $response = $this->db->select('*')->from('member')->where(array('membership' => '2', 'status' => 'approved', 'gender' => '1'))->get()->result_array();
+        return $response;
+    }
+
+    function getactivePremiumGroomDetails()
+    {
+
+        $response = array();
+        $response = $this->db->select('*')->from('member')->where(array('membership' => '2', 'status' => 'approved', 'gender' => '1', 'is_closed' => 'no'))->get()->result_array();
+        return $response;
+    }
+
+    function getPremiumBrideDetails()
+    {
+
+        $response = array();
+        $response =  $this->db->select('*')->from('member')->where(array('membership' => '2', 'status' => 'approved', 'gender' => '2'))->get()->result_array();
+        return $response;
+    }
+
+    function getactivePremiumBrideDetails()
+    {
+
+        $response = array();
+        $response =  $this->db->select('*')->from('member')->where(array('membership' => '2', 'status' => 'approved', 'gender' => '2', 'is_closed' => 'no'))->get()->result_array();
+        return $response;
+    }
+
+    function getPremiumUserDetails()
+    {
+
+        $response = array();
+        $response = $this->db->select('*')->from('member')->where(array('membership' => '2', 'status' => 'approved'))->get()->result_array();
+        return $response;
+    }
+
+    function getactivePremiumUserDetails()
+    {
+
+        $response = array();
+        $response = $this->db->select('*')->from('member')->where(array('membership' => '2', 'status' => 'approved', 'is_closed' => 'no'))->get()->result_array();
+        return $response;
+    }
+
+
+
+    // code written by gowda
+    function allmembers_starfilter($membership, $limit, $start, $col, $dir, $nakshatra, $nakshatra_gender)
+    {
+        if ($nakshatra) {
+            if ($nakshatra == 'Ashwini Nakshatra') {
+                $nakshtra_array = [1, 2, 27, 6, 13, 7, 15, 9, 10, 11, 12, 21, 4];
+            } else if ($nakshatra == 'Bharani Nakshatra') {
+                $nakshtra_array = [12, 5, 26, 7, 8, 19, 12, 13, 20, 22];
+            } else if ($nakshatra == 'Mrigasira Nakshatra') {
+                $nakshtra_array = [27, 3, 5, 7, 9, 19, 12, 14, 21];
+            } else if ($nakshatra == 'Ardra Nakshatra') {
+                $nakshtra_array = [27, 3, 5, 9, 12, 14, 25, 23];
+            } else if ($nakshatra == 'Punarvasu Nakshatra') {
+                $nakshtra_array = [1, 26, 27, 3, 4, 5, 6, 8, 10, 12, 13, 15, 17, 19, 22];
+            } else if ($nakshatra == 'Pushya Nakshatra') {
+                $nakshtra_array = [4, 6, 7, 9, 11, 13, 14, 18, 20, 25];
+            } else if ($nakshatra == 'Ashlesha Nakshatra') {
+                $nakshtra_array = [1, 8, 10, 14, 17, 19, 21, 24];
+            } else if ($nakshatra == 'Magha Nakshatra') {
+                $nakshtra_array = [2, 26, 27, 4, 5, 7, 8, 9, 11, 13, 15, 16, 20, 22];
+            } else if ($nakshatra == 'Purva Phalguni Nakshatra') {
+                $nakshtra_array = [1, 26, 3, 5, 8, 19, 22, 16, 17, 21];
+            } else if ($nakshatra == 'Uttara Phalguni Nakshatra') {
+                $nakshtra_array = [1, 2, 27, 4, 11, 13, 15, 20, 22, 24];
+            } else if ($nakshatra == 'Hasta Nakshatra') {
+                $nakshtra_array = [3, 5, 11, 12, 14, 16, 18, 19, 21];
+            } else if ($nakshatra == 'Chitra Nakshatra') {
+                $nakshtra_array = [12, 27, 4, 10, 11, 13, 15, 17, 20, 22, 24];
+            } else if ($nakshatra == 'Swati Nakshatra') {
+                $nakshtra_array = [2, 3, 5, 12, 13, 14, 16, 18, 23, 25];
+            } else if ($nakshatra == 'Vishakha Nakshatra') {
+                $nakshtra_array = [1, 2, 27, 3, 4, 6, 8, 15, 17, 21, 22, 24];
+            } else if ($nakshatra == 'Anuradha Nakshatra') {
+                $nakshtra_array = [2, 27, 4, 5, 7, 9, 15, 16, 18, 20, 22, 23, 25];
+            } else if ($nakshatra == 'Jyeshtha Nakshatra') {
+                $nakshtra_array = [26, 10, 21, 23, 24, 27, 3, 5];
+            } else if ($nakshatra == 'Mula Nakshatra') {
+                $nakshtra_array = [2, 4, 9, 11, 18, 20, 22];
+            } else if ($nakshatra == 'Purva Ashadha Nakshatra') {
+                $nakshtra_array = [19, 12, 14, 10, 21, 23, 25];
+            } else if ($nakshatra == 'Uttara Ashadha Nakshatra') {
+                $nakshtra_array = [1, 27, 4, 6, 8, 9, 11, 13, 15, 17, 20, 22];
+            } else if ($nakshatra == 'Shravana Nakshatra') {
+                $nakshtra_array = [2, 26, 3, 5, 7, 9, 12, 14, 16, 19, 20, 21, 23, 25];
+            } else if ($nakshatra == 'Dhanishta Nakshatra') {
+                $nakshtra_array = [1, 26, 27, 4, 6, 8, 19, 11, 13, 15, 17, 10, 20, 21, 23, 25];
+            } else if ($nakshatra == 'Shatabhisha Nakshatra') {
+                $nakshtra_array = [2, 3, 5, 8, 10, 12, 9, 14, 16, 18, 21, 23, 25];
+            } else if ($nakshatra == 'Purva Bhadra Nakshatra') {
+                $nakshtra_array = [1, 3, 4, 6, 8, 10, 12, 13, 15, 17];
+            } else if ($nakshatra == 'Uttara Bhadra Nakshatra') {
+                $nakshtra_array = [2, 27, 4, 5, 8, 9, 11, 13, 14, 16, 20, 18, 25];
+            } else if ($nakshatra == 'Revati Nakshatra') {
+                $nakshtra_array = [1, 26, 3, 5, 6, 8, 9, 10, 11, 13, 17, 15];
+            } else if ($nakshatra == 'Krittika Nakshatra') {
+                $nakshtra_array = [1, 2, 27, 20, 6, 8, 9, 12, 13, 15, 10, 21];
+            } else if ($nakshatra == 'Rohini Nakshatra') {
+                $nakshtra_array = [27, 3, 5, 7, 9, 19, 12, 14, 21];
             }
 
-            else if($nakshatra=='Magha Nakshatra')
-            {
-                $nakshtra_array=[2,26,27,4,5,7,8,9,11,13,15,16,20,22];
-            
-            }
+            $q = $this->db
+                ->limit($limit, $start)
+                ->order_by($col, $dir)
+                ->select('*')
+                ->from('member')
+                ->join('nakshtramatch', 'member.nakshtra_id =nakshtra_match_id', 'inner')
+                ->where_in('nakshtramatch.nakshtra_match_id', $nakshtra_array)
+                ->where('membership', $membership)
+                ->where('gender <>', $nakshatra_gender)
+                ->get();
+            if ($q->num_rows() > 0) {
 
-            else if($nakshatra=='Purva Phalguni Nakshatra')
-            {
-                $nakshtra_array=[1,26,3,5,8,19,22,16,17,21];
-            
+                return $q->result();
+            } else {
+                return null;
             }
+        }
+    }
 
-            else if($nakshatra=='Uttara Phalguni Nakshatra')
-            {
-                $nakshtra_array=[1,2,27,4,11,13,15,20,22,24];
-            
-            }
-
-            else if($nakshatra=='Hasta Nakshatra')
-            {
-                $nakshtra_array=[3,5,11,12,14,16,18,19,21];
-            
-            }
-
-            else if($nakshatra=='Chitra Nakshatra')
-            {
-                $nakshtra_array=[12,27,4,10,11,13,15,17,20,22,24];
-            
-            }
-
-            else if($nakshatra=='Swati Nakshatra')
-            {
-                $nakshtra_array=[2,3,5,12,13,14,16,18,23,25];
-            
-            }
-
-            else if($nakshatra=='Vishakha Nakshatra')
-            {
-                $nakshtra_array=[1,2,27,3,4,6,8,15,17,21,22,24];
-            
-            }
-
-            else if($nakshatra=='Anuradha Nakshatra')
-            {
-                $nakshtra_array=[2,27,4,5,7,9,15,16,18,20,22,23,25];
-            
-            }
-
-            else if($nakshatra=='Jyeshtha Nakshatra')
-            {
-                $nakshtra_array=[26,10,21,23,24,27,3,5];
-            
-            }
-
-            else if($nakshatra=='Mula Nakshatra')
-            {
-                $nakshtra_array=[2,4,9,11,18,20,22];
-            
-            }
-
-            else if($nakshatra=='Purva Ashadha Nakshatra')
-            {
-                $nakshtra_array=[19,12,14,10,21,23,25];
-            
-            }
-
-            else if($nakshatra=='Uttara Ashadha Nakshatra')
-            {
-                $nakshtra_array=[1,27,4,6,8,9,11,13,15,17,20,22];
-            
-            }
-            else if($nakshatra=='Shravana Nakshatra')
-            {
-                $nakshtra_array=[2,26,3,5,7,9,12,14,16,19,20,21,23,25];
-            
-            }
-
-            else if($nakshatra=='Dhanishta Nakshatra')
-            {
-                $nakshtra_array=[1,26,27,4,6,8,19,11,13,15,17,10,20,21,23,25];
-            
-            }
-
-            else if($nakshatra=='Shatabhisha Nakshatra')
-            {
-                $nakshtra_array=[2,3,5,8,10,12,9,14,16,18,21,23,25];
-            
-            }
-
-            else if($nakshatra=='Purva Bhadra Nakshatra')
-            {
-                $nakshtra_array=[1,3,4,6,8,10,12,13,15,17];
-            
-            }
-            else if($nakshatra=='Uttara Bhadra Nakshatra')
-            {
-                $nakshtra_array=[2,27,4,5,8,9,11,13,14,16,20,18,25];
-            
-            }
-
-            else if($nakshatra=='Revati Nakshatra')
-            {
-                $nakshtra_array=[1,26,3,5,6,8,9,10,11,13,17,15];
-            
-            }
-            else if($nakshatra=='Krittika Nakshatra')
-            {
-                $nakshtra_array=[1,2,27,20,6,8,9,12,13,15,10,21];
-            
-            }
-
-            else if($nakshatra=='Rohini Nakshatra')
-            {
-                $nakshtra_array=[27,3,5,7,9,19,12,14,21];
-            
+    function star_allmembers_count($member_type, $limit, $start, $order, $dir, $nakshatra, $nakshatra_gender)
+    {
+        if ($nakshatra) {
+            if ($nakshatra == 'Ashwini Nakshatra') {
+                $nakshtra_array = [1, 2, 27, 6, 13, 7, 15, 9, 10, 11, 12, 21, 4];
+            } else if ($nakshatra == 'Bharani Nakshatra') {
+                $nakshtra_array = [12, 5, 26, 7, 8, 19, 12, 13, 20, 22];
+            } else if ($nakshatra == 'Mrigasira Nakshatra') {
+                $nakshtra_array = [27, 3, 5, 7, 9, 19, 12, 14, 21];
+            } else if ($nakshatra == 'Ardra Nakshatra') {
+                $nakshtra_array = [27, 3, 5, 9, 12, 14, 25, 23];
+            } else if ($nakshatra == 'Punarvasu Nakshatra') {
+                $nakshtra_array = [1, 26, 27, 3, 4, 5, 6, 8, 10, 12, 13, 15, 17, 19, 22];
+            } else if ($nakshatra == 'Pushya Nakshatra') {
+                $nakshtra_array = [4, 6, 7, 9, 11, 13, 14, 18, 20, 25];
+            } else if ($nakshatra == 'Ashlesha Nakshatra') {
+                $nakshtra_array = [1, 8, 10, 14, 17, 19, 21, 24];
+            } else if ($nakshatra == 'Magha Nakshatra') {
+                $nakshtra_array = [2, 26, 27, 4, 5, 7, 8, 9, 11, 13, 15, 16, 20, 22];
+            } else if ($nakshatra == 'Purva Phalguni Nakshatra') {
+                $nakshtra_array = [1, 26, 3, 5, 8, 19, 22, 16, 17, 21];
+            } else if ($nakshatra == 'Uttara Phalguni Nakshatra') {
+                $nakshtra_array = [1, 2, 27, 4, 11, 13, 15, 20, 22, 24];
+            } else if ($nakshatra == 'Hasta Nakshatra') {
+                $nakshtra_array = [3, 5, 11, 12, 14, 16, 18, 19, 21];
+            } else if ($nakshatra == 'Chitra Nakshatra') {
+                $nakshtra_array = [12, 27, 4, 10, 11, 13, 15, 17, 20, 22, 24];
+            } else if ($nakshatra == 'Swati Nakshatra') {
+                $nakshtra_array = [2, 3, 5, 12, 13, 14, 16, 18, 23, 25];
+            } else if ($nakshatra == 'Vishakha Nakshatra') {
+                $nakshtra_array = [1, 2, 27, 3, 4, 6, 8, 15, 17, 21, 22, 24];
+            } else if ($nakshatra == 'Anuradha Nakshatra') {
+                $nakshtra_array = [2, 27, 4, 5, 7, 9, 15, 16, 18, 20, 22, 23, 25];
+            } else if ($nakshatra == 'Jyeshtha Nakshatra') {
+                $nakshtra_array = [26, 10, 21, 23, 24, 27, 3, 5];
+            } else if ($nakshatra == 'Mula Nakshatra') {
+                $nakshtra_array = [2, 4, 9, 11, 18, 20, 22];
+            } else if ($nakshatra == 'Purva Ashadha Nakshatra') {
+                $nakshtra_array = [19, 12, 14, 10, 21, 23, 25];
+            } else if ($nakshatra == 'Uttara Ashadha Nakshatra') {
+                $nakshtra_array = [1, 27, 4, 6, 8, 9, 11, 13, 15, 17, 20, 22];
+            } else if ($nakshatra == 'Shravana Nakshatra') {
+                $nakshtra_array = [2, 26, 3, 5, 7, 9, 12, 14, 16, 19, 20, 21, 23, 25];
+            } else if ($nakshatra == 'Dhanishta Nakshatra') {
+                $nakshtra_array = [1, 26, 27, 4, 6, 8, 19, 11, 13, 15, 17, 10, 20, 21, 23, 25];
+            } else if ($nakshatra == 'Shatabhisha Nakshatra') {
+                $nakshtra_array = [2, 3, 5, 8, 10, 12, 9, 14, 16, 18, 21, 23, 25];
+            } else if ($nakshatra == 'Purva Bhadra Nakshatra') {
+                $nakshtra_array = [1, 3, 4, 6, 8, 10, 12, 13, 15, 17];
+            } else if ($nakshatra == 'Uttara Bhadra Nakshatra') {
+                $nakshtra_array = [2, 27, 4, 5, 8, 9, 11, 13, 14, 16, 20, 18, 25];
+            } else if ($nakshatra == 'Revati Nakshatra') {
+                $nakshtra_array = [1, 26, 3, 5, 6, 8, 9, 10, 11, 13, 17, 15];
+            } else if ($nakshatra == 'Krittika Nakshatra') {
+                $nakshtra_array = [1, 2, 27, 20, 6, 8, 9, 12, 13, 15, 10, 21];
+            } else if ($nakshatra == 'Rohini Nakshatra') {
+                $nakshtra_array = [27, 3, 5, 7, 9, 19, 12, 14, 21];
             }
         }
 
         $query = $this->db
-        ->select('*')
-        ->from('member')
-        ->join('nakshtramatch', 'member.nakshtra_id =nakshtra_match_id', 'inner')
-        ->where_in('nakshtramatch.nakshtra_match_id',$nakshtra_array)
-        ->where('membership', $member_type)
-        ->where('gender <>', $nakshatra_gender)
-        ->get()
-        ->result();
-        return count($query); 
+            ->select('*')
+            ->from('member')
+            ->join('nakshtramatch', 'member.nakshtra_id =nakshtra_match_id', 'inner')
+            ->where_in('nakshtramatch.nakshtra_match_id', $nakshtra_array)
+            ->where('membership', $member_type)
+            ->where('gender <>', $nakshatra_gender)
+            ->get()
+            ->result();
+        return count($query);
     }
 
-    function star_members_search($membership,$limit,$start,$search,$col,$dir,$nakshatra,$nakshatra_gender)
+    function star_members_search($membership, $limit, $start, $search, $col, $dir, $nakshatra, $nakshatra_gender)
     {
-        $this->db->limit($limit,$start);
-        $this->db->order_by($col,$dir);
-        $this->db->where('membership',$membership);
-        
+        $this->db->limit($limit, $start);
+        $this->db->order_by($col, $dir);
+        $this->db->where('membership', $membership);
+
         $this->db->group_start();
-        $this->db->like('percentage', $search,'after');
+        $this->db->like('percentage', $search, 'after');
         $this->db->or_like('member_id', $search);
         $this->db->or_like('first_name', $search);
         $this->db->or_like('last_name', $search);
         $this->db->or_like('member_profile_id', $search);
         $this->db->group_end();
-        $star_members_search = $this->allmembers_starfilter($membership, $limit, $start, '', $dir,$nakshatra,$nakshatra_gender);
+        $star_members_search = $this->allmembers_starfilter($membership, $limit, $start, '', $dir, $nakshatra, $nakshatra_gender);
 
         return $star_members_search;
-    } 
+    }
 
-    function star_members_search_count($membership,$limit,$start,$search,$col,$dir,$nakshatra,$nakshatra_gender)
+    function star_members_search_count($membership, $limit, $start, $search, $col, $dir, $nakshatra, $nakshatra_gender)
     {
-        $star_members_search = $this->star_members_search($membership, $limit, $start,$search,$col, $dir,$nakshatra,$nakshatra_gender);
+        $star_members_search = $this->star_members_search($membership, $limit, $start, $search, $col, $dir, $nakshatra, $nakshatra_gender);
 
         // $this->db->where("(member_id LIKE '%$search%' OR first_name LIKE '%$search%' OR last_name LIKE '%$search%' OR member_profile_id LIKE '%$search%')");
         return count($star_members_search);
 
         // return  $star_members_search->num_rows();
-    } 
+    }
 
-    function star_select_html($from, $name, $field, $type, $class, $e_match = '', $condition = '', $c_match = '', $onchange = '',$condition_type='single')
+    function star_select_html($from, $name, $field, $type, $class, $e_match = '', $condition = '', $c_match = '', $onchange = '', $condition_type = 'single')
     {
         $return = '';
         $other  = '';
@@ -2787,12 +2564,12 @@ function allmembers_starfilter($membership,$limit,$start,$col,$dir,$nakshatra,$n
             if ($condition == '') {
                 $all = $this->db->get($from)->result_array();
             } else if ($condition !== '') {
-                if($condition_type=='single'){
+                if ($condition_type == 'single') {
                     $all = $this->db->get_where($from, array(
                         $condition => $c_match
                     ))->result_array();
-                }else if($condition_type=='multi'){
-                    $this->db->where_in($condition,$c_match);
+                } else if ($condition_type == 'multi') {
+                    $this->db->where_in($condition, $c_match);
                     $all = $this->db->get($from)->result_array();
                 }
             }
@@ -2803,21 +2580,17 @@ function allmembers_starfilter($membership,$limit,$start,$col,$dir,$nakshatra,$n
                 if ($type == 'add') {
                     $return .= '<option value="' . $row[$from . '_id'] . '">' . $row[$field] . '</option>';
                 } else if ($type == 'edit') {
-                  
+
                     $return .= '<option value="' . $row[$from . '_id'] . '" ';
-                    
+
                     if ($multi == 'no') {
-                        
+
                         if ($row[$from . '_id'] == $e_match) {
                             $return .= 'selected=."selected"';
-                        }
-                        
-                        elseif ($row[$from . '_name'] == $e_match) {
+                        } elseif ($row[$from . '_name'] == $e_match) {
                             $return .= 'selected=."selected"';
                         }
-                    }
-
-                    else if ($multi == 'yes') {
+                    } else if ($multi == 'yes') {
                         if (in_array($row[$from . '_id'], $e_match)) {
                             $return .= 'selected=."selected"';
                         }
@@ -2859,102 +2632,85 @@ function allmembers_starfilter($membership,$limit,$start,$col,$dir,$nakshatra,$n
     }
 
 
-function patnername_select_html($from,$gender,$selected)
-    {   
+    function patnername_select_html($from, $gender, $selected)
+    {
         //echo $selected;
         $return = '';
         $return = '<select name="partner_name" onChange="" class="form-control form-control-sm selectpicker"      tabindex="2" data-hide-disabled="true" >';
-        if($gender==2){
-           $return = '<select name="member_name" onChange="" class="form-control form-control-sm selectpicker"      tabindex="2" data-hide-disabled="true" >';   
+        if ($gender == 2) {
+            $return = '<select name="member_name" onChange="" class="form-control form-control-sm selectpicker"      tabindex="2" data-hide-disabled="true" >';
         }
 
-        $this->db->where('gender',$gender);
-        $this->db->where('status','approved');
+        $this->db->where('gender', $gender);
+        $this->db->where('status', 'approved');
         $query = $this->db->get($from);
 
-        if($query->num_rows()>0)
-        {
+        if ($query->num_rows() > 0) {
             $results    =    $query->result();
-        }
-        else
-        {
+        } else {
             $results    =  null;
         }
-        if($results){
-             $return .= '<option value="">Choose one</option>';
-            foreach($results as $key=>$row){
-                        
-                   
-                    if ($row->member_id == $selected) { 
-                         //$return .= 'selected="selected"'; 
-                         $return .= '<option value="' . $row->member_id .'" selected="selected">' . $row->first_name.' '.$row->last_name . '</option>';
-                     }
-                   
+        if ($results) {
+            $return .= '<option value="">Choose one</option>';
+            foreach ($results as $key => $row) {
 
-                 $return .= '<option value="' . $row->member_id .'">' . $row->first_name.' '.$row->last_name . '</option>';
-                    $return .= '</option>';
 
-                 
+                if ($row->member_id == $selected) {
+                    //$return .= 'selected="selected"'; 
+                    $return .= '<option value="' . $row->member_id . '" selected="selected">' . $row->first_name . ' ' . $row->last_name . '</option>';
+                }
+
+
+                $return .= '<option value="' . $row->member_id . '">' . $row->first_name . ' ' . $row->last_name . '</option>';
+                $return .= '</option>';
             }
         }
         $return .= '</select>';
         return $return;
     }
 
-function ocupation_select_html()
-    {   
-        //echo $selected;
-       
-        $return = '<select name="profession" id="filter_profession" onChange="filter_members(\'0\',\'search\')" class="form-control form-control-sm selectpicker" tabindex="2" data-hide-disabled="true" >';
-       
-
-         $query = $this->db->get('occupation');
-
-        if($query->num_rows()>0)
-        {
-            $results    =    $query->result();
-        }
-        else
-        {
-            $results    =  null;
-        }
-        if($results){
-             $return .= '<option value="">Choose one</option>';
-            foreach($results as $key=>$row){
-          
-                   
-
-                 $return .= '<option value="' . $row->occupation_id  .'">' . $row->name.'</option>';
-                    $return .= '</option>';
-
-                 
-            }
-        }
-        $return .= '</select>';
-        return $return;
-    }
-
-     function get_membername_by_id($table,$field1val)
+    function ocupation_select_html()
     {
-        if(!empty($field1val)){
-            $this->db->where('member_id',$field1val);
+        //echo $selected;
+
+        $return = '<select name="profession" id="filter_profession" onChange="filter_members(\'0\',\'search\')" class="form-control form-control-sm selectpicker" tabindex="2" data-hide-disabled="true" >';
+
+
+        $query = $this->db->get('occupation');
+
+        if ($query->num_rows() > 0) {
+            $results    =    $query->result();
+        } else {
+            $results    =  null;
+        }
+        if ($results) {
+            $return .= '<option value="">Choose one</option>';
+            foreach ($results as $key => $row) {
+
+
+
+                $return .= '<option value="' . $row->occupation_id  . '">' . $row->name . '</option>';
+                $return .= '</option>';
+            }
+        }
+        $return .= '</select>';
+        return $return;
+    }
+
+    function get_membername_by_id($table, $field1val)
+    {
+        if (!empty($field1val)) {
+            $this->db->where('member_id', $field1val);
             $query = $this->db->get($table);
-              if($query->num_rows()>0)
-            {
+            if ($query->num_rows() > 0) {
                 $results    =    $query->row_array();
 
-               return $results['first_name'].' '.$results['last_name'];
-              
-                 
+                return $results['first_name'] . ' ' . $results['last_name'];
+            } else {
+                return  null;
             }
-            else
-            {
-              return  null;
-            }
-        }else
-            {
-              return  null;
-            }
+        } else {
+            return  null;
+        }
     }
-
 }

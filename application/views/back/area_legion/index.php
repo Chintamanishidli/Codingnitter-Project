@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -19,6 +20,7 @@
             margin: 0;
             padding: 0;
         }
+
         .btn-delete-legion {
             background: linear-gradient(135deg, #f59e0b, #d97706);
             padding: 0.25rem 0.5rem;
@@ -32,8 +34,10 @@
             margin: 0 auto;
             padding: 2rem;
             /* Add top margin to avoid header overlap */
-            margin-top: 80px; /* Adjust this value based on your admin header height */
-            padding-top: 1rem; /* Reduced top padding since we have margin-top */
+            margin-top: 80px;
+            /* Adjust this value based on your admin header height */
+            padding-top: 1rem;
+            /* Reduced top padding since we have margin-top */
         }
 
         #page-head {
@@ -201,6 +205,18 @@
             font-size: 1.125rem;
         }
 
+        /* Legion Short Name Prefix */
+        .legion-prefix {
+            display: inline-block;
+            background: #14b8a6;
+            color: white;
+            padding: 0.2rem 0.5rem;
+            font-size: 0.75rem;
+            margin-right: 0.5rem;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
         /* Ensure modals appear above admin elements */
         .modal-overlay {
             position: fixed;
@@ -213,7 +229,8 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            z-index: 9999; /* High z-index to appear above admin elements */
+            z-index: 9999;
+            /* High z-index to appear above admin elements */
             opacity: 0;
             visibility: hidden;
             transition: all 0.3s ease;
@@ -327,11 +344,22 @@
             margin-top: 0.5rem;
         }
 
+        .legion-short {
+            background: #14b8a6;
+            color: white;
+            padding: 0.2rem 0.5rem;
+            font-size: 0.75rem;
+            margin-left: 0.5rem;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
         /* Responsive Design */
         @media (max-width: 768px) {
             #content-container {
                 padding: 1rem;
-                margin-top: 70px; /* Adjust for mobile admin header */
+                margin-top: 70px;
+                /* Adjust for mobile admin header */
                 padding-top: 0.5rem;
             }
 
@@ -349,18 +377,21 @@
                 font-size: 0.875rem;
             }
 
-            th, td {
+            th,
+            td {
                 padding: 0.75rem 0.5rem;
             }
 
-            th:first-child, td:first-child {
+            th:first-child,
+            td:first-child {
                 display: none;
             }
         }
 
         @media (max-width: 480px) {
             #content-container {
-                margin-top: 60px; /* Further adjust for smaller mobile screens */
+                margin-top: 60px;
+                /* Further adjust for smaller mobile screens */
             }
 
             .modal-content {
@@ -377,37 +408,17 @@
                 transform: translate(-50%, -50%) scale(1);
             }
 
-            th:nth-child(4), td:nth-child(4) {
+            th:nth-child(4),
+            td:nth-child(4) {
                 width: 1px;
                 white-space: nowrap;
             }
-        }
 
-        /* Admin Panel Integration Styles */
-        /* If your admin panel has a fixed sidebar, uncomment and adjust the following */
-        /*
-        #content-container {
-            margin-left: 250px; /* Adjust based on your sidebar width */
-        }
-        
-        @media (max-width: 768px) {
-            #content-container {
-                margin-left: 0; /* Remove sidebar margin on mobile */
+            .legion-prefix {
+                display: block;
+                margin-right: 0;
+                margin-bottom: 0.25rem;
             }
-        }
-        */
-
-        /* Additional utility classes for admin integration */
-        .admin-content {
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-        }
-
-        /* Ensure modals appear above admin elements */
-        .modal-overlay {
-            z-index: 9999; /* High z-index to appear above admin elements */
         }
 
         /* Loading Animation */
@@ -416,6 +427,7 @@
                 opacity: 0;
                 transform: translateY(10px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -433,537 +445,560 @@
         tbody tr:nth-child(odd) {
             animation-delay: 0.05s;
         }
+
+        /* Confirm buttons styling */
+        .confirm-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .btn-confirm {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            flex: 1;
+        }
+
+        .btn-cancel {
+            background: linear-gradient(135deg, #6b7280, #4b5563);
+            flex: 1;
+        }
     </style>
 </head>
+
 <body>
 
-<!--CONTENT CONTAINER-->
-<div id="content-container">
-    <div id="page-head">
-        <div id="page-title">
-            <h1 class="page-header">Areas and their Legions</h1>
-            <button id="btnAddArea">Add Area</button>
-        </div>
-    </div>
-
-    <div id="page-content">
-        <!-- Success Alert -->
-        <div class="alert alert-success" style="display: none;" id="successAlert">
-            Action completed successfully!
-        </div>
-        
-        <!-- Danger Alert -->
-        <div class="alert alert-danger" style="display: none;" id="dangerAlert">
-            Error occurred while processing your request.
+    <!--CONTENT CONTAINER-->
+    <div id="content-container">
+        <div id="page-head">
+            <div id="page-title">
+                <h1 class="page-header">Areas and their Legions</h1>
+                <button id="btnAddArea">Add Area</button>
+            </div>
         </div>
 
-        <div>
-            <!-- Sample data table -->
-            <table>
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Area Name</th>
-                        <th>Legions</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    
-                    <?php 
-                    foreach ($areas as $index => $area) : ?>
+        <div id="page-content">
+            <!-- Success Alert -->
+            <div class="alert alert-success" style="display: none;" id="successAlert">
+                Action completed successfully!
+            </div>
+
+            <!-- Danger Alert -->
+            <div class="alert alert-danger" style="display: none;" id="dangerAlert">
+                Error occurred while processing your request.
+            </div>
+
+            <div>
+                <!-- Sample data table -->
+                <table>
+                    <thead>
                         <tr>
-                            <td><?= $index + 1 ?></td>
-                            <td><?= htmlspecialchars($area['name']) ?></td>
-                            <td>
-                                <?php if (!empty($area['legions'])) : ?>
-                                    <ul style="margin:0; padding-left:20px;">
-                                        <?php foreach ($area['legions'] as $legion) : ?>
-                                            <li>
-                                                <div class="legion-item">
-                                                    <span class="legion-name"><?= htmlspecialchars($legion['name']) ?></span>
-                                                    <button class="btn-delete-legion" 
-                                                        data-legion-id="<?= htmlspecialchars($legion['id']) ?>" 
-                                                        data-legion-name="<?= htmlspecialchars($legion['name']) ?>"
-                                                        data-area-id="<?= htmlspecialchars($area['id']) ?>">
-                                                        Delete
-                                                    </button>
-                                                </div>
-                                            </li>
-                                        <?php endforeach; ?>
-                                    </ul>
-                                <?php else : ?>
-                                    <em>No legions assigned.</em>
-                                <?php endif; ?>
-                            </td>
-                            <td>
-                                <div class="action-buttons">
-                                    <button class="btn-add-legion" 
-                                        data-area-id="<?= htmlspecialchars($area['id']) ?>" 
-                                        data-area-name="<?= htmlspecialchars($area['name']) ?>">
-                                        + Add Legion
-                                    </button>
-                                    <button class="btn-delete-area" 
-                                        data-area-id="<?= htmlspecialchars($area['id']) ?>" 
-                                        data-area-name="<?= htmlspecialchars($area['name']) ?>">
-                                        Delete Area
-                                    </button>
-                                </div>
-                            </td>
+                            <th>#</th>
+                            <th>Area Name</th>
+                            <th>Legions</th>
+                            <th>Actions</th>
                         </tr>
-                    <?php endforeach; 
-                     ?>
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($areas as $index => $area) : ?>
+                            <tr>
+                                <td><?= $index + 1 ?></td>
+                                <td><?= htmlspecialchars($area['name']) ?></td>
+                                <td>
+                                    <?php if (!empty($area['legions'])) : ?>
+                                        <ul style="margin:0; padding-left:20px;">
+                                            <?php foreach ($area['legions'] as $legion) : ?>
+                                                <li>
+                                                    <div class="legion-item">
+                                                        <!-- Legion Short Name as Prefix -->
+                                                        <span class="legion-prefix">
+                                                            <?= htmlspecialchars($legion['short'] ?? strtoupper(substr($legion['name'], 0, 3))) ?>
+                                                        </span>
+                                                        <span class="legion-name"><?= htmlspecialchars($legion['name']) ?></span>
+
+
+
+                                                        <button class="btn-delete-legion"
+                                                            data-legion-id="<?= htmlspecialchars($legion['id']) ?>"
+                                                            data-legion-name="<?= htmlspecialchars($legion['name']) ?>"
+                                                            data-area-id="<?= htmlspecialchars($area['id']) ?>">
+                                                            Delete
+                                                        </button>
+                                                    </div>
+                                                </li>
+                                            <?php endforeach; ?>
+                                        </ul>
+                                    <?php else : ?>
+                                        <em>No legions assigned.</em>
+                                    <?php endif; ?>
+                                </td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <button class="btn-add-legion"
+                                            data-area-id="<?= htmlspecialchars($area['id']) ?>"
+                                            data-area-name="<?= htmlspecialchars($area['name']) ?>">
+                                            + Add Legion
+                                        </button>
+                                        <button class="btn-delete-area"
+                                            data-area-id="<?= htmlspecialchars($area['id']) ?>"
+                                            data-area-name="<?= htmlspecialchars($area['name']) ?>">
+                                            Delete Area
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
-</div>
 
-<!-- Add Legion Modal -->
-<div id="customModal" class="modal-overlay">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h3>Add Legion to <span id="modalAreaName">Area</span></h3>
-            <button class="modal-close-btn" id="modalCloseBtn">✖</button>
-        </div>
-        <form id="addLegionForm" action="<?= site_url('admin/add_legion') ?>" method="POST">
-            <input type="hidden" name="area_id" id="modalAreaId" value="">
-            <label for="legionName">Legion Name:</label>
-            <input type="text" id="legionName" name="legion_name" required placeholder="Enter legion name...">
-            <button type="submit">Add Legion</button>
-        </form>
-    </div>
-</div>
+    <!-- Add Legion Modal -->
+    <div id="customModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add Legion to <span id="modalAreaName">Area</span></h3>
+                <button class="modal-close-btn" id="modalCloseBtn">✖</button>
+            </div>
+            <form id="addLegionForm" action="<?= site_url('admin/add_legion') ?>" method="POST">
+                <input type="hidden" name="area_id" id="modalAreaId" value="">
+                <label for="legionName">Legion Name:</label>
+                <input type="text" id="legionName" name="legion_name" required placeholder="Enter legion name...">
 
-<!-- Add Area Modal -->
-<div id="addAreaModal" class="modal-overlay">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h3>Add New Area</h3> 
-            <button class="modal-close-btn" id="addAreaModalCloseBtn">✖</button>
-        </div>
-        <form id="addAreaForm" action="<?= site_url('admin/add_area') ?>" method="POST">
-            <label for="areaName">Area Name:</label>
-            <input type="text" id="areaName" name="area_name" required placeholder="Enter area name...">
-            <button type="submit">Add Area</button>
-        </form>
-    </div>
-</div>
+                <label for="legionShortName">Legion Short Name:</label>
+                <input type="text" id="legionShortName" name="short" required
+                    placeholder="Enter legion short name..." maxlength="3">
 
-<!-- Delete Confirmation Modal -->
-<div id="deleteConfirmModal" class="modal-overlay confirm-modal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h3>Confirm Deletion</h3>
-            <button class="modal-close-btn" id="deleteConfirmCloseBtn">✖</button>
-        </div>
-        <p id="deleteConfirmMessage">Are you sure you want to delete this item?</p>
-        <div class="confirm-buttons">
-            <button class="btn-confirm" id="confirmDeleteBtn">Delete</button>
-            <button class="btn-cancel" id="cancelDeleteBtn">Cancel</button>
+                <button type="submit">Add Legion</button>
+            </form>
         </div>
     </div>
-</div>
 
-<!-- JavaScript -->
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Modal elements
-        const modal = document.getElementById('customModal');
-        const modalAreaName = document.getElementById('modalAreaName');
-        const modalAreaId = document.getElementById('modalAreaId');
-        const modalCloseBtn = document.getElementById('modalCloseBtn');
-        const form = document.getElementById('addLegionForm');
+    <!-- Add Area Modal -->
+    <div id="addAreaModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add New Area</h3>
+                <button class="modal-close-btn" id="addAreaModalCloseBtn">✖</button>
+            </div>
+            <form id="addAreaForm" action="<?= site_url('admin/add_area') ?>" method="POST">
+                <label for="areaName">Area Name:</label>
+                <input type="text" id="areaName" name="area_name" required placeholder="Enter area name...">
+                <button type="submit">Add Area</button>
+            </form>
+        </div>
+    </div>
 
-        // Add Area Modal elements
-        const addAreaModal = document.getElementById('addAreaModal');
-        const addAreaModalCloseBtn = document.getElementById('addAreaModalCloseBtn');
-        const addAreaForm = document.getElementById('addAreaForm');
-        const btnAddArea = document.getElementById('btnAddArea');
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteConfirmModal" class="modal-overlay confirm-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Confirm Deletion</h3>
+                <button class="modal-close-btn" id="deleteConfirmCloseBtn">✖</button>
+            </div>
+            <p id="deleteConfirmMessage">Are you sure you want to delete this item?</p>
+            <div class="confirm-buttons">
+                <button class="btn-confirm" id="confirmDeleteBtn">Delete</button>
+                <button class="btn-cancel" id="cancelDeleteBtn">Cancel</button>
+            </div>
+        </div>
+    </div>
 
-        // Delete Confirmation Modal elements
-        const deleteConfirmModal = document.getElementById('deleteConfirmModal');
-        const deleteConfirmCloseBtn = document.getElementById('deleteConfirmCloseBtn');
-        const deleteConfirmMessage = document.getElementById('deleteConfirmMessage');
-        const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
-        const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
+    <!-- JavaScript -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Modal elements
+            const modal = document.getElementById('customModal');
+            const modalAreaName = document.getElementById('modalAreaName');
+            const modalAreaId = document.getElementById('modalAreaId');
+            const modalCloseBtn = document.getElementById('modalCloseBtn');
+            const form = document.getElementById('addLegionForm');
 
-        // Alert elements
-        const successAlert = document.getElementById('successAlert');
-        const dangerAlert = document.getElementById('dangerAlert');
+            // Add Area Modal elements
+            const addAreaModal = document.getElementById('addAreaModal');
+            const addAreaModalCloseBtn = document.getElementById('addAreaModalCloseBtn');
+            const addAreaForm = document.getElementById('addAreaForm');
+            const btnAddArea = document.getElementById('btnAddArea');
 
-        // Current delete operation
-        let currentDeleteOperation = null;
+            // Delete Confirmation Modal elements
+            const deleteConfirmModal = document.getElementById('deleteConfirmModal');
+            const deleteConfirmCloseBtn = document.getElementById('deleteConfirmCloseBtn');
+            const deleteConfirmMessage = document.getElementById('deleteConfirmMessage');
+            const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+            const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
 
-        // Modal animation functions
-        function showModal(modalElement) {
-            modalElement.style.display = 'flex';
-            setTimeout(() => modalElement.classList.add('show'), 10);
-        }
+            // Alert elements
+            const successAlert = document.getElementById('successAlert');
+            const dangerAlert = document.getElementById('dangerAlert');
 
-        function hideModal(modalElement) {
-            modalElement.classList.remove('show');
-            setTimeout(() => modalElement.style.display = 'none', 300);
-        }
+            // Current delete operation
+            let currentDeleteOperation = null;
 
-        // Alert functions
-        function showAlert(alertElement, message, duration = 3000) {
-            alertElement.textContent = message;
-            alertElement.style.display = 'block';
-            setTimeout(() => {
-                alertElement.style.display = 'none';
-            }, duration);
-        }
-
-        // Add Legion Modal functionality
-        function initAddLegionButtons() {
-            const addLegionButtons = document.querySelectorAll('.btn-add-legion');
-            addLegionButtons.forEach(button => {
-                button.addEventListener('click', function() {
-                    const areaId = this.getAttribute('data-area-id');
-                    const areaName = this.getAttribute('data-area-name');
-
-                    modalAreaName.textContent = areaName || 'Unknown Area';
-                    modalAreaId.value = areaId || '';
-
-                    showModal(modal);
-                    
-                    setTimeout(() => {
-                        document.getElementById('legionName').focus();
-                    }, 400);
-                });
-            });
-        }
-
-        // Delete Area functionality
-        function initDeleteAreaButtons() {
-            const deleteAreaButtons = document.querySelectorAll('.btn-delete-area');
-            deleteAreaButtons.forEach(button => {
-                button.addEventListener('click', function() {
-                    const areaId = this.getAttribute('data-area-id');
-                    const areaName = this.getAttribute('data-area-name');
-
-                    currentDeleteOperation = {
-                        type: 'area',
-                        id: areaId,
-                        name: areaName,
-                        element: this.closest('tr')
-                    };
-
-                    deleteConfirmMessage.textContent = `Are you sure you want to delete the area "${areaName}"? This will also delete all legions in this area.`;
-                    showModal(deleteConfirmModal);
-                });
-            });
-        }
-
-        // Delete Legion functionality
-        function initDeleteLegionButtons() {
-            const deleteLegionButtons = document.querySelectorAll('.btn-delete-legion');
-            deleteLegionButtons.forEach(button => {
-                button.addEventListener('click', function() {
-                    const legionId = this.getAttribute('data-legion-id');
-                    const legionName = this.getAttribute('data-legion-name');
-                    const areaId = this.getAttribute('data-area-id');
-
-                    currentDeleteOperation = {
-                        type: 'legion',
-                        id: legionId,
-                        name: legionName,
-                        areaId: areaId,
-                        element: this.closest('li')
-                    };
-
-                    deleteConfirmMessage.textContent = `Are you sure you want to delete the legion "${legionName}"?`;
-                    showModal(deleteConfirmModal);
-                });
-            });
-        }
-
-        // Initialize all button events
-        initAddLegionButtons();
-        initDeleteAreaButtons();
-        initDeleteLegionButtons();
-
-        // Modal close events
-        modalCloseBtn.addEventListener('click', () => hideModal(modal));
-        addAreaModalCloseBtn.addEventListener('click', () => hideModal(addAreaModal));
-        deleteConfirmCloseBtn.addEventListener('click', () => hideModal(deleteConfirmModal));
-        cancelDeleteBtn.addEventListener('click', () => hideModal(deleteConfirmModal));
-
-        // Add Area Modal functionality
-        btnAddArea.addEventListener('click', function() {
-            showModal(addAreaModal);
-            setTimeout(() => {
-                document.getElementById('areaName').focus();
-            }, 400);
-        });
-
-        // Close modals when clicking outside
-        [modal, addAreaModal, deleteConfirmModal].forEach(modalElement => {
-            modalElement.addEventListener('click', function(e) {
-                if (e.target === modalElement) {
-                    hideModal(modalElement);
-                }
-            });
-        });
-
-        // Close modals on Escape key
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                if (modal.classList.contains('show')) hideModal(modal);
-                if (addAreaModal.classList.contains('show')) hideModal(addAreaModal);
-                if (deleteConfirmModal.classList.contains('show')) hideModal(deleteConfirmModal);
-            }
-        });
-
-        // Confirm Delete functionality
-        confirmDeleteBtn.addEventListener('click', function() {
-            if (!currentDeleteOperation) return;
-
-            const operation = currentDeleteOperation;
-            
-            if (operation.type === 'area') {
-                // Delete area
-                deleteArea(operation.id, operation.name, operation.element);
-            } else if (operation.type === 'legion') {
-                // Delete legion
-                deleteLegion(operation.id, operation.name, operation.areaId, operation.element);
+            // Modal animation functions
+            function showModal(modalElement) {
+                modalElement.style.display = 'flex';
+                setTimeout(() => modalElement.classList.add('show'), 10);
             }
 
-            hideModal(deleteConfirmModal);
-            currentDeleteOperation = null;
-        });
-
-        // Delete Area function
-        function deleteArea(areaId, areaName, rowElement) {
-    fetch(`<?= site_url('admin/delete_area') ?>`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ area_id: areaId })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            rowElement.style.animation = 'fadeOut 0.3s ease forwards';
-            setTimeout(() => {
-                rowElement.remove();
-                updateRowNumbers();
-            }, 300);
-            showAlert(successAlert, `Area "${areaName}" deleted successfully!`);
-        } else {
-            // 👇 Show backend error message
-            showAlert(dangerAlert, `Error deleting area: ${data.message}`);
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        showAlert(dangerAlert, `Unexpected error while deleting area: ${error.message}`);
-    });
-}
-
-        // Delete Legion function
-        function deleteLegion(legionId, legionName, areaId, listElement) {
-            // Here you would normally make an AJAX call to your backend
-            // For demo purposes, we'll just simulate the deletion
-            
-            fetch(`<?= site_url('admin/delete_legion') ?>`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    legion_id: legionId,
-                    area_id: areaId
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-    if (data.success) {
-        listElement.style.animation = 'fadeOut 0.3s ease forwards';
-        setTimeout(() => {
-            listElement.remove();
-            const parentUl = listElement.closest('ul');
-            if (parentUl && parentUl.children.length === 0) {
-                parentUl.closest('td').innerHTML = '<em>No legions assigned.</em>';
+            function hideModal(modalElement) {
+                modalElement.classList.remove('show');
+                setTimeout(() => modalElement.style.display = 'none', 300);
             }
-        }, 300);
-        showAlert(successAlert, `Legion "${legionName}" deleted successfully!`);
-    } else {
-        // ✅ Display specific error message from backend
-        showAlert(dangerAlert, `Error deleting legion: ${data.message}`);
-    }
-})  .catch(error => {
-                console.error('Error:', error);
-                // For demo purposes, we'll still remove the element
-                listElement.style.animation = 'fadeOut 0.3s ease forwards';
+
+            // Alert functions
+            function showAlert(alertElement, message, duration = 3000) {
+                alertElement.textContent = message;
+                alertElement.style.display = 'block';
                 setTimeout(() => {
-                    listElement.remove();
-                    
-                    const parentUl = listElement.closest('ul');
-                    if (parentUl && parentUl.children.length === 0) {
-                        parentUl.closest('td').innerHTML = '<em>No legions assigned.</em>';
-                    }
-                }, 300);
-                showAlert(successAlert, `Legion "${legionName}" deleted successfully! (Demo)`);
-            });
-        }
-
-        // Update row numbers after deletion
-        function updateRowNumbers() {
-            const rows = document.querySelectorAll('tbody tr');
-            rows.forEach((row, index) => {
-                const numberCell = row.querySelector('td:first-child');
-                if (numberCell) {
-                    numberCell.textContent = index + 1;
-                }
-            });
-        }
-
-        // Add Legion Form submission
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const formData = new FormData(form);
-            
-            fetch(form.action, {
-                method: 'POST',
-                body: formData,
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    showAlert(successAlert, `Legion "${data.legion_name}" added successfully!`);
-                    
-                    // Add new legion to the UI
-                    addNewLegionToArea(data.area_id, data.legion_id, data.legion_name);
-                    
-                    form.reset();
-                    hideModal(modal);
-                } else {
-                    showAlert(dangerAlert, 'Error adding legion: ' + data.message);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                showAlert(dangerAlert, 'An error occurred while adding legion.');
-            });
-        });
-
-        // Add Area Form submission
-        addAreaForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const formData = new FormData(addAreaForm);
-            
-            fetch(addAreaForm.action, {
-                method: 'POST',
-                body: formData,
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    showAlert(successAlert, `Area "${data.area_name}" added successfully!`);
-                    
-                    // Add new area to the table
-                    addNewAreaToTable(data.area_name, data.area_id);
-                    
-                    addAreaForm.reset();
-                    hideModal(addAreaModal);
-                } else {
-                    showAlert(dangerAlert, 'Error adding area: ' + data.message);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                showAlert(dangerAlert, 'An error occurred while adding area.');
-            });
-        });
-
-        // Function to add new legion to existing area
-        function addNewLegionToArea(areaId, legionId, legionName) {
-            const areaRow = document.querySelector(`button[data-area-id="${areaId}"]`).closest('tr');
-            const legionCell = areaRow.querySelector('td:nth-child(3)');
-            
-            let legionList = legionCell.querySelector('ul');
-            
-            // If no existing list, create one
-            if (!legionList) {
-                legionCell.innerHTML = '<ul style="margin:0; padding-left:20px;"></ul>';
-                legionList = legionCell.querySelector('ul');
+                    alertElement.style.display = 'none';
+                }, duration);
             }
-            
-            // Create new legion item
-            const newLegionItem = document.createElement('li');
-            newLegionItem.innerHTML = `
-                <div class="legion-item">
-                    <span class="legion-name">${legionName}</span>
-                    <button class="btn-delete-legion" 
-                        data-legion-id="${legionId}" 
-                        data-legion-name="${legionName}"
-                        data-area-id="${areaId}">
-                        Delete
-                    </button>
-                </div>
-            `;
-            
-            legionList.appendChild(newLegionItem);
-            
-            // Re-initialize delete button events for the new button
-            initDeleteLegionButtons();
-        }
 
-        // Function to add new area to table
-        function addNewAreaToTable(areaName, areaId) {
-            const tbody = document.querySelector('tbody');
-            const rowCount = tbody.children.length + 1;
-            
-            const newRow = document.createElement('tr');
-            newRow.innerHTML = `
-                <td>${rowCount}</td>
-                <td>${areaName}</td>
-                <td><em>No legions assigned.</em></td>
-                <td>
-                    <div class="action-buttons">
-                        <button class="btn-add-legion" 
-                            data-area-id="${areaId}" 
-                            data-area-name="${areaName}">
-                            + Add Legion
-                        </button>
-                        <button class="btn-delete-area" 
-                            data-area-id="${areaId}" 
-                            data-area-name="${areaName}">
-                            Delete Area
-                        </button>
-                    </div>
-                </td>
-            `;
-            
-            tbody.appendChild(newRow);
-            
-            // Re-initialize button events for the new buttons
+            // Add Legion Modal functionality
+            function initAddLegionButtons() {
+                const addLegionButtons = document.querySelectorAll('.btn-add-legion');
+                addLegionButtons.forEach(button => {
+                    button.addEventListener('click', function() {
+                        const areaId = this.getAttribute('data-area-id');
+                        const areaName = this.getAttribute('data-area-name');
+
+                        modalAreaName.textContent = areaName || 'Unknown Area';
+                        modalAreaId.value = areaId || '';
+
+                        showModal(modal);
+
+                        setTimeout(() => {
+                            document.getElementById('legionName').focus();
+                        }, 400);
+                    });
+                });
+            }
+
+            // Delete Area functionality
+            function initDeleteAreaButtons() {
+                const deleteAreaButtons = document.querySelectorAll('.btn-delete-area');
+                deleteAreaButtons.forEach(button => {
+                    button.addEventListener('click', function() {
+                        const areaId = this.getAttribute('data-area-id');
+                        const areaName = this.getAttribute('data-area-name');
+
+                        currentDeleteOperation = {
+                            type: 'area',
+                            id: areaId,
+                            name: areaName,
+                            element: this.closest('tr')
+                        };
+
+                        deleteConfirmMessage.textContent = `Are you sure you want to delete the area "${areaName}"? This will also delete all legions in this area.`;
+                        showModal(deleteConfirmModal);
+                    });
+                });
+            }
+
+            // Delete Legion functionality
+            function initDeleteLegionButtons() {
+                const deleteLegionButtons = document.querySelectorAll('.btn-delete-legion');
+                deleteLegionButtons.forEach(button => {
+                    button.addEventListener('click', function() {
+                        const legionId = this.getAttribute('data-legion-id');
+                        const legionName = this.getAttribute('data-legion-name');
+                        const areaId = this.getAttribute('data-area-id');
+
+                        currentDeleteOperation = {
+                            type: 'legion',
+                            id: legionId,
+                            name: legionName,
+                            areaId: areaId,
+                            element: this.closest('li')
+                        };
+
+                        deleteConfirmMessage.textContent = `Are you sure you want to delete the legion "${legionName}"?`;
+                        showModal(deleteConfirmModal);
+                    });
+                });
+            }
+
+            // Initialize all button events
             initAddLegionButtons();
             initDeleteAreaButtons();
-        }
+            initDeleteLegionButtons();
 
-        // Add fadeOut animation for deletions
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes fadeOut {
-                from {
-                    opacity: 1;
-                    transform: translateX(0);
+            // Modal close events
+            modalCloseBtn.addEventListener('click', () => hideModal(modal));
+            addAreaModalCloseBtn.addEventListener('click', () => hideModal(addAreaModal));
+            deleteConfirmCloseBtn.addEventListener('click', () => hideModal(deleteConfirmModal));
+            cancelDeleteBtn.addEventListener('click', () => hideModal(deleteConfirmModal));
+
+            // Add Area Modal functionality
+            btnAddArea.addEventListener('click', function() {
+                showModal(addAreaModal);
+                setTimeout(() => {
+                    document.getElementById('areaName').focus();
+                }, 400);
+            });
+
+            // Close modals when clicking outside
+            [modal, addAreaModal, deleteConfirmModal].forEach(modalElement => {
+                modalElement.addEventListener('click', function(e) {
+                    if (e.target === modalElement) {
+                        hideModal(modalElement);
+                    }
+                });
+            });
+
+            // Close modals on Escape key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    if (modal.classList.contains('show')) hideModal(modal);
+                    if (addAreaModal.classList.contains('show')) hideModal(addAreaModal);
+                    if (deleteConfirmModal.classList.contains('show')) hideModal(deleteConfirmModal);
                 }
-                to {
-                    opacity: 0;
-                    transform: translateX(-20px);
+            });
+
+            // Confirm Delete functionality
+            confirmDeleteBtn.addEventListener('click', function() {
+                if (!currentDeleteOperation) return;
+
+                const operation = currentDeleteOperation;
+
+                if (operation.type === 'area') {
+                    // Delete area
+                    deleteArea(operation.id, operation.name, operation.element);
+                } else if (operation.type === 'legion') {
+                    // Delete legion
+                    deleteLegion(operation.id, operation.name, operation.areaId, operation.element);
                 }
+
+                hideModal(deleteConfirmModal);
+                currentDeleteOperation = null;
+            });
+
+            // Delete Area function
+            function deleteArea(areaId, areaName, rowElement) {
+                fetch(`<?= site_url('admin/delete_area') ?>`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            area_id: areaId
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            rowElement.style.animation = 'fadeOut 0.3s ease forwards';
+                            setTimeout(() => {
+                                rowElement.remove();
+                                updateRowNumbers();
+                            }, 300);
+                            showAlert(successAlert, `Area "${areaName}" deleted successfully!`);
+                        } else {
+                            showAlert(dangerAlert, `Error deleting area: ${data.message}`);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        showAlert(dangerAlert, `Unexpected error while deleting area: ${error.message}`);
+                    });
             }
-        `;
-        document.head.appendChild(style);
-    });
-</script>
+
+            // Delete Legion function
+            function deleteLegion(legionId, legionName, areaId, listElement) {
+                fetch(`<?= site_url('admin/delete_legion') ?>`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            legion_id: legionId,
+                            area_id: areaId
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            listElement.style.animation = 'fadeOut 0.3s ease forwards';
+                            setTimeout(() => {
+                                listElement.remove();
+                                const parentUl = listElement.closest('ul');
+                                if (parentUl && parentUl.children.length === 0) {
+                                    parentUl.closest('td').innerHTML = '<em>No legions assigned.</em>';
+                                }
+                            }, 300);
+                            showAlert(successAlert, `Legion "${legionName}" deleted successfully!`);
+                        } else {
+                            showAlert(dangerAlert, `Error deleting legion: ${data.message}`);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        showAlert(dangerAlert, `Unexpected error while deleting legion: ${error.message}`);
+                    });
+            }
+
+            // Update row numbers after deletion
+            function updateRowNumbers() {
+                const rows = document.querySelectorAll('tbody tr');
+                rows.forEach((row, index) => {
+                    const numberCell = row.querySelector('td:first-child');
+                    if (numberCell) {
+                        numberCell.textContent = index + 1;
+                    }
+                });
+            }
+
+            // Add Legion Form submission
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                const formData = new FormData(form);
+
+                fetch(form.action, {
+                        method: 'POST',
+                        body: formData,
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            showAlert(successAlert, `Legion "${data.legion_name}" added successfully!`);
+
+                            // Add new legion to the UI
+                            addNewLegionToArea(data.area_id, data.legion_id, data.legion_name, data.legion_short);
+
+                            form.reset();
+                            hideModal(modal);
+                        } else {
+                            showAlert(dangerAlert, 'Error adding legion: ' + data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        showAlert(dangerAlert, 'An error occurred while adding legion.');
+                    });
+            });
+
+            // Add Area Form submission
+            addAreaForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                const formData = new FormData(addAreaForm);
+
+                fetch(addAreaForm.action, {
+                        method: 'POST',
+                        body: formData,
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            showAlert(successAlert, `Area "${data.area_name}" added successfully!`);
+
+                            // Add new area to the table
+                            addNewAreaToTable(data.area_name, data.area_id);
+
+                            addAreaForm.reset();
+                            hideModal(addAreaModal);
+                        } else {
+                            showAlert(dangerAlert, 'Error adding area: ' + data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        showAlert(dangerAlert, 'An error occurred while adding area.');
+                    });
+            });
+
+            // Function to add new legion to existing area
+            function addNewLegionToArea(areaId, legionId, legionName, legionShort) {
+                const areaRow = document.querySelector(`button[data-area-id="${areaId}"]`).closest('tr');
+                const legionCell = areaRow.querySelector('td:nth-child(3)');
+
+                let legionList = legionCell.querySelector('ul');
+
+                // If no existing list, create one
+                if (!legionList) {
+                    legionCell.innerHTML = '<ul style="margin:0; padding-left:20px;"></ul>';
+                    legionList = legionCell.querySelector('ul');
+                }
+
+                // Create new legion item
+                const newLegionItem = document.createElement('li');
+                // Use the short form from the backend response
+                const shortForm = legionShort || legionName.substring(0, 3).toUpperCase();
+
+                newLegionItem.innerHTML = `
+                    <div class="legion-item">
+                        <!-- Legion Short Name as Prefix -->
+                        <span class="legion-prefix">${shortForm}</span>
+                        <span class="legion-name">${legionName}</span>
+                        
+
+                        <button class="btn-delete-legion" 
+                            data-legion-id="${legionId}" 
+                            data-legion-name="${legionName}"
+                            data-area-id="${areaId}">
+                            Delete
+                        </button>
+                    </div>
+                `;
+
+                legionList.appendChild(newLegionItem);
+
+                // Re-initialize delete button events for the new button
+                initDeleteLegionButtons();
+            }
+
+            // Function to add new area to table
+            function addNewAreaToTable(areaName, areaId) {
+                const tbody = document.querySelector('tbody');
+                const rowCount = tbody.children.length + 1;
+
+                const newRow = document.createElement('tr');
+                newRow.innerHTML = `
+                    <td>${rowCount}</td>
+                    <td>${areaName}</td>
+                    <td><em>No legions assigned.</em></td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="btn-add-legion" 
+                                data-area-id="${areaId}" 
+                                data-area-name="${areaName}">
+                                + Add Legion
+                            </button>
+                            <button class="btn-delete-area" 
+                                data-area-id="${areaId}" 
+                                data-area-name="${areaName}">
+                                Delete Area
+                            </button>
+                        </div>
+                    </td>
+                `;
+
+                tbody.appendChild(newRow);
+
+                // Re-initialize button events for the new buttons
+                initAddLegionButtons();
+                initDeleteAreaButtons();
+            }
+
+            // Add fadeOut animation for deletions
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes fadeOut {
+                    from {
+                        opacity: 1;
+                        transform: translateX(0);
+                    }
+                    to {
+                        opacity: 0;
+                        transform: translateX(-20px);
+                    }
+                }
+            `;
+            document.head.appendChild(style);
+        });
+    </script>
 
 </body>
+
 </html>

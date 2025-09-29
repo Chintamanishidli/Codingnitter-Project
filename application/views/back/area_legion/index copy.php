@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -25,8 +26,10 @@
             margin: 0 auto;
             padding: 2rem;
             /* Add top margin to avoid header overlap */
-            margin-top: 80px; /* Adjust this value based on your admin header height */
-            padding-top: 1rem; /* Reduced top padding since we have margin-top */
+            margin-top: 80px;
+            /* Adjust this value based on your admin header height */
+            padding-top: 1rem;
+            /* Reduced top padding since we have margin-top */
         }
 
         #page-head {
@@ -206,7 +209,8 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            z-index: 9999; /* High z-index to appear above admin elements */
+            z-index: 9999;
+            /* High z-index to appear above admin elements */
             opacity: 0;
             visibility: hidden;
             transition: all 0.3s ease;
@@ -324,7 +328,8 @@
         @media (max-width: 768px) {
             #content-container {
                 padding: 1rem;
-                margin-top: 70px; /* Adjust for mobile admin header */
+                margin-top: 70px;
+                /* Adjust for mobile admin header */
                 padding-top: 0.5rem;
             }
 
@@ -342,18 +347,21 @@
                 font-size: 0.875rem;
             }
 
-            th, td {
+            th,
+            td {
                 padding: 0.75rem 0.5rem;
             }
 
-            th:first-child, td:first-child {
+            th:first-child,
+            td:first-child {
                 display: none;
             }
         }
 
         @media (max-width: 480px) {
             #content-container {
-                margin-top: 60px; /* Further adjust for smaller mobile screens */
+                margin-top: 60px;
+                /* Further adjust for smaller mobile screens */
             }
 
             .modal-content {
@@ -370,7 +378,8 @@
                 transform: translate(-50%, -50%) scale(1);
             }
 
-            th:nth-child(4), td:nth-child(4) {
+            th:nth-child(4),
+            td:nth-child(4) {
                 width: 1px;
                 white-space: nowrap;
             }
@@ -382,12 +391,14 @@
         #content-container {
             margin-left: 250px; /* Adjust based on your sidebar width */
         }
-        
+
         @media (max-width: 768px) {
             #content-container {
-                margin-left: 0; /* Remove sidebar margin on mobile */
+                margin-left: 0;
+                /* Remove sidebar margin on mobile */
             }
         }
+
         */
 
         /* Additional utility classes for admin integration */
@@ -400,7 +411,8 @@
 
         /* Ensure modals appear above admin elements */
         .modal-overlay {
-            z-index: 9999; /* High z-index to appear above admin elements */
+            z-index: 9999;
+            /* High z-index to appear above admin elements */
         }
 
         /* Loading Animation */
@@ -409,6 +421,7 @@
                 opacity: 0;
                 transform: translateY(10px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -428,40 +441,41 @@
         }
     </style>
 </head>
+
 <body>
 
-<!--CONTENT CONTAINER-->
-<div id="content-container">
-    <div id="page-head">
-        <div id="page-title">
-            <h1 class="page-header">Areas and their Legions</h1>
-            <button id="btnAddArea">Add Area</button>
-        </div>
-    </div>
-
-    <div id="page-content">
-        <!-- Success Alert Example -->
-        <div class="alert alert-success" style="display: none;" id="successAlert">
-            Area added successfully!
-        </div>
-        
-        <!-- Danger Alert Example -->
-        <div class="alert alert-danger" style="display: none;" id="dangerAlert">
-            Error occurred while processing your request.
+    <!--CONTENT CONTAINER-->
+    <div id="content-container">
+        <div id="page-head">
+            <div id="page-title">
+                <h1 class="page-header">Areas and their Legions</h1>
+                <button id="btnAddArea">Add Area</button>
+            </div>
         </div>
 
-        <div>
-            <!-- Sample data for demonstration -->
-            <table>
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Area Name</th>
-                        <th>Legions</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody>
+        <div id="page-content">
+            <!-- Success Alert Example -->
+            <div class="alert alert-success" style="display: none;" id="successAlert">
+                Area added successfully!
+            </div>
+
+            <!-- Danger Alert Example -->
+            <div class="alert alert-danger" style="display: none;" id="dangerAlert">
+                Error occurred while processing your request.
+            </div>
+
+            <div>
+                <!-- Sample data for demonstration -->
+                <table>
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Area Name</th>
+                            <th>Legions</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
                         <?php foreach ($areas as $index => $area) : ?>
                             <tr>
                                 <td><?= $index + 1 ?></td>
@@ -478,8 +492,8 @@
                                     <?php endif; ?>
                                 </td>
                                 <td>
-                                    <button class="btn-add-legion" 
-                                        data-area-id="<?= htmlspecialchars($area['id']) ?>" 
+                                    <button class="btn-add-legion"
+                                        data-area-id="<?= htmlspecialchars($area['id']) ?>"
                                         data-area-name="<?= htmlspecialchars($area['name']) ?>"
                                         style="cursor:pointer; padding:5px 10px;">
                                         + Add Legion
@@ -488,244 +502,247 @@
                             </tr>
                         <?php endforeach; ?>
                     </tbody>
-            </table>
+                </table>
+            </div>
         </div>
     </div>
-</div>
 
-<!-- Add Legion Modal -->
-<div id="customModal" class="modal-overlay">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h3>Add Legion to <span id="modalAreaName">Area</span></h3>
-            <button id="modalCloseBtn">✖</button>
+    <!-- Add Legion Modal -->
+    <div id="customModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add Legion to <span id="modalAreaName">Area</span></h3>
+                <button id="modalCloseBtn">✖</button>
+            </div>
+            <form id="addLegionForm" action="<?= site_url('admin/add_legion') ?>" method="POST">
+                <input type="hidden" name="area_id" id="modalAreaId" value="">
+                <label for="legionName">Legion Name:</label>
+                <input type="text" id="legionName" name="legion_name" required placeholder="Enter legion name...">
+
+                <label for="areaShortName">Area Short Name:</label>
+                <input type="text" id="areaShortName" name="area_short_name" required placeholder="Enter area short name...">
+
+                <button type="submit">Add Legion</button>
+            </form>
         </div>
-        <form id="addLegionForm" action="<?= site_url('admin/add_legion') ?>" method="POST">
-
-            <input type="hidden" name="area_id" id="modalAreaId" value="">
-            <label for="legionName">Legion Name:</label>
-            <input type="text" id="legionName" name="legion_name" required placeholder="Enter legion name...">
-            <button type="submit">Add Legion</button>
-        </form>
     </div>
-</div>
 
-<!-- Add Area Modal -->
-<div id="addAreaModal" class="modal-overlay">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h3>Add New Area</h3> 
-            <button id="addAreaModalCloseBtn">✖</button>
+    <!-- Add Area Modal -->
+    <div id="addAreaModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add New Area</h3>
+                <button id="addAreaModalCloseBtn">✖</button>
+            </div>
+            <form id="addAreaForm" action="<?= site_url('admin/add_area') ?>" method="POST">
+                <label for="areaName">Area Name:</label>
+                <input type="text" id="areaName" name="area_name" required placeholder="Enter area name...">
+
+                <label for="areaShortName">Area Short Name:</label>
+                <input type="text" id="areaShortName" name="area_short_name" required placeholder="Enter area short name...">
+                <button type="submit">Add Area</button>
+            </form>
         </div>
-        <form id="addAreaForm"  action="<?= site_url('admin/add_area') ?>"method="POST">
-            <label for="areaName">Area Name:</label>
-            <input type="text" id="areaName" name="area_name" required placeholder="Enter area name...">
-            <button type="submit">Add Area</button>
-        </form>
     </div>
-</div>
 
-<!-- JavaScript -->
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const modal = document.getElementById('customModal');
-        const modalAreaName = document.getElementById('modalAreaName');
-        const modalAreaId = document.getElementById('modalAreaId');
-        const modalCloseBtn = document.getElementById('modalCloseBtn');
-        const addLegionButtons = document.querySelectorAll('.btn-add-legion');
-        const form = document.getElementById('addLegionForm');
+    <!-- JavaScript -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const modal = document.getElementById('customModal');
+            const modalAreaName = document.getElementById('modalAreaName');
+            const modalAreaId = document.getElementById('modalAreaId');
+            const modalCloseBtn = document.getElementById('modalCloseBtn');
+            const addLegionButtons = document.querySelectorAll('.btn-add-legion');
+            const form = document.getElementById('addLegionForm');
 
-        // Add Area Modal Elements
-        const addAreaModal = document.getElementById('addAreaModal');
-        const addAreaModalCloseBtn = document.getElementById('addAreaModalCloseBtn');
-        const addAreaForm = document.getElementById('addAreaForm');
-        const btnAddArea = document.getElementById('btnAddArea');
+            // Add Area Modal Elements
+            const addAreaModal = document.getElementById('addAreaModal');
+            const addAreaModalCloseBtn = document.getElementById('addAreaModalCloseBtn');
+            const addAreaForm = document.getElementById('addAreaForm');
+            const btnAddArea = document.getElementById('btnAddArea');
 
-        // Add smooth modal animations
-        function showModal(modalElement) {
-            modalElement.style.display = 'flex';
-            setTimeout(() => modalElement.classList.add('show'), 10);
-        }
+            // Add smooth modal animations
+            function showModal(modalElement) {
+                modalElement.style.display = 'flex';
+                setTimeout(() => modalElement.classList.add('show'), 10);
+            }
 
-        function hideModal(modalElement) {
-            modalElement.classList.remove('show');
-            setTimeout(() => modalElement.style.display = 'none', 300);
-        }
+            function hideModal(modalElement) {
+                modalElement.classList.remove('show');
+                setTimeout(() => modalElement.style.display = 'none', 300);
+            }
 
-        // Add Legion Modal functionality
-        addLegionButtons.forEach(button => {
-            button.addEventListener('click', function() {
-                const areaId = this.getAttribute('data-area-id');
-                const areaName = this.getAttribute('data-area-name');
+            // Add Legion Modal functionality
+            addLegionButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const areaId = this.getAttribute('data-area-id');
+                    const areaName = this.getAttribute('data-area-name');
 
-                modalAreaName.textContent = areaName || 'Unknown Area';
-                modalAreaId.value = areaId || '';
+                    modalAreaName.textContent = areaName || 'Unknown Area';
+                    modalAreaId.value = areaId || '';
 
-                showModal(modal);
-                
+                    showModal(modal);
+
+                    // Focus on input field
+                    setTimeout(() => {
+                        document.getElementById('legionName').focus();
+                    }, 400);
+                });
+            });
+
+            modalCloseBtn.addEventListener('click', () => hideModal(modal));
+
+            // Add Area Modal functionality
+            btnAddArea.addEventListener('click', function() {
+                showModal(addAreaModal);
+
                 // Focus on input field
                 setTimeout(() => {
-                    document.getElementById('legionName').focus();
+                    document.getElementById('areaName').focus();
                 }, 400);
             });
-        });
 
-        modalCloseBtn.addEventListener('click', () => hideModal(modal));
+            addAreaModalCloseBtn.addEventListener('click', () => hideModal(addAreaModal));
 
-        // Add Area Modal functionality
-        btnAddArea.addEventListener('click', function() {
-            showModal(addAreaModal);
-            
-            // Focus on input field
-            setTimeout(() => {
-                document.getElementById('areaName').focus();
-            }, 400);
-        });
-
-        addAreaModalCloseBtn.addEventListener('click', () => hideModal(addAreaModal));
-
-        // Close modals if click outside content
-        modal.addEventListener('click', function(e) {
-            if (e.target === modal) {
-                hideModal(modal);
-            }
-        });
-
-        addAreaModal.addEventListener('click', function(e) {
-            if (e.target === addAreaModal) {
-                hideModal(addAreaModal);
-            }
-        });
-
-        // Close modals on Escape key
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                if (modal.classList.contains('show')) {
+            // Close modals if click outside content
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
                     hideModal(modal);
                 }
-                if (addAreaModal.classList.contains('show')) {
+            });
+
+            addAreaModal.addEventListener('click', function(e) {
+                if (e.target === addAreaModal) {
                     hideModal(addAreaModal);
                 }
+            });
+
+            // Close modals on Escape key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    if (modal.classList.contains('show')) {
+                        hideModal(modal);
+                    }
+                    if (addAreaModal.classList.contains('show')) {
+                        hideModal(addAreaModal);
+                    }
+                }
+            });
+
+            form.addEventListener('submit', function(e) {
+                e.preventDefault(); // stop normal form submit
+
+                const formData = new FormData(form); // collects form inputs
+
+                fetch(form.action, {
+                        method: 'POST',
+                        body: formData,
+                    })
+                    .then(response => response.json()) // expecting JSON response
+                    .then(data => {
+                        if (data.success) {
+                            // Show success message
+                            const successAlert = document.getElementById('successAlert');
+                            successAlert.textContent = `Legion "${data.legion_name}" added successfully!`;
+                            successAlert.style.display = 'block';
+
+                            // Optionally update UI here (e.g., add new legion to a list)
+
+                            form.reset();
+                            // Hide modal if you want
+                            hideModal(document.getElementById('customModal'));
+
+                            setTimeout(() => {
+                                successAlert.style.display = 'none';
+                            }, 3000);
+                        } else {
+                            alert('Error adding legion: ' + data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('An error occurred while adding legion.');
+                    });
+            });
+
+            // Add Area Form submission
+            addAreaForm.addEventListener('submit', function(e) {
+                e.preventDefault(); // stop normal form submit
+
+                const formData = new FormData(addAreaForm); // collects form inputs
+
+                fetch(addAreaForm.action, {
+                        method: 'POST',
+                        body: formData,
+                    })
+                    .then(response => response.json()) // expecting JSON response
+                    .then(data => {
+                        if (data.success) {
+                            // Show success message
+                            const successAlert = document.getElementById('successAlert');
+                            successAlert.textContent = `Area "${data.area_name}" added successfully!`;
+                            successAlert.style.display = 'block';
+
+                            // Optionally update UI here (e.g., add new area to a table)
+                            addNewAreaToTable(data.area_name, data.area_id);
+
+                            addAreaForm.reset();
+                            // Hide modal if you want
+                            hideModal(document.getElementById('addAreaModal'));
+
+                            setTimeout(() => {
+                                successAlert.style.display = 'none';
+                            }, 3000);
+                        } else {
+                            alert('Error adding area: ' + data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('An error occurred while adding area.');
+                    });
+            });
+
+            // Function to add new area to table (demo functionality)
+            function addNewAreaToTable(areaName, areaId) {
+                const tbody = document.querySelector('tbody');
+                const rowCount = tbody.children.length + 1;
+
+                const newRow = document.createElement('tr');
+                newRow.innerHTML = `
+                    <td>${rowCount}</td>
+                    <td>${areaName}</td>
+                    <td><em>No legions assigned.</em></td>
+                    <td>
+                        <button class="btn-add-legion" 
+                            data-area-id="${areaId}" 
+                            data-area-name="${areaName}">
+                            + Add Legion
+                        </button>
+                    </td>
+                `;
+
+                tbody.appendChild(newRow);
+
+                // Add event listener to the new button
+                const newButton = newRow.querySelector('.btn-add-legion');
+                newButton.addEventListener('click', function() {
+                    const areaId = this.getAttribute('data-area-id');
+                    const areaName = this.getAttribute('data-area-name');
+
+                    modalAreaName.textContent = areaName || 'Unknown Area';
+                    modalAreaId.value = areaId || '';
+
+                    showModal(modal);
+
+                    setTimeout(() => {
+                        document.getElementById('legionName').focus();
+                    }, 400);
+                });
             }
         });
-
-
-form.addEventListener('submit', function(e) {
-    e.preventDefault(); // stop normal form submit
-    
-    const formData = new FormData(form); // collects form inputs
-    
-    fetch(form.action, {
-        method: 'POST',
-        body: formData,
-    })
-    .then(response => response.json())  // expecting JSON response
-    .then(data => {
-        if (data.success) {
-            // Show success message
-            const successAlert = document.getElementById('successAlert');
-            successAlert.textContent = `Legion "${data.legion_name}" added successfully!`;
-            successAlert.style.display = 'block';
-
-            // Optionally update UI here (e.g., add new legion to a list)
-
-            form.reset();
-            // Hide modal if you want
-            hideModal(document.getElementById('customModal'));
-            
-            setTimeout(() => {
-                successAlert.style.display = 'none';
-            }, 3000);
-        } else {
-            alert('Error adding legion: ' + data.message);
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        alert('An error occurred while adding legion.');
-    });
-});
-
-        // Add Area Form submission
-
-        addAreaForm.addEventListener('submit', function(e) {
-            e.preventDefault(); // stop normal form submit
-            
-            const formData = new FormData(addAreaForm); // collects form inputs
-            
-            fetch(addAreaForm.action, {
-                method: 'POST',
-                body: formData,
-            })
-            .then(response => response.json())  // expecting JSON response
-            .then(data => {
-                if (data.success) {
-                    // Show success message
-                    const successAlert = document.getElementById('successAlert');
-                    successAlert.textContent = `Area "${data.area_name}" added successfully!`;
-                    successAlert.style.display = 'block';
-
-                    // Optionally update UI here (e.g., add new area to a table)
-                    addNewAreaToTable(data.area_name, data.area_id);
-
-                    addAreaForm.reset();
-                    // Hide modal if you want
-                    hideModal(document.getElementById('addAreaModal'));
-                    
-                    setTimeout(() => {
-                        successAlert.style.display = 'none';
-                    }, 3000);
-                } else {
-                    alert('Error adding area: ' + data.message);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('An error occurred while adding area.');
-            });
-        });
-
-
-        // Function to add new area to table (demo functionality)
-        function addNewAreaToTable(areaName) {
-            const tbody = document.querySelector('tbody');
-            const rowCount = tbody.children.length + 1;
-            const newAreaId = Date.now(); // Simple ID generation for demo
-            
-            const newRow = document.createElement('tr');
-            newRow.innerHTML = `
-                <td>${rowCount}</td>
-                <td>${areaName}</td>
-                <td><em>No legions assigned.</em></td>
-                <td>
-                    <button class="btn-add-legion" 
-                        data-area-id="${newAreaId}" 
-                        data-area-name="${areaName}">
-                        + Add Legion
-                    </button>
-                </td>
-            `;
-            
-            tbody.appendChild(newRow);
-            
-            // Add event listener to the new button
-            const newButton = newRow.querySelector('.btn-add-legion');
-            newButton.addEventListener('click', function() {
-                const areaId = this.getAttribute('data-area-id');
-                const areaName = this.getAttribute('data-area-name');
-
-                modalAreaName.textContent = areaName || 'Unknown Area';
-                modalAreaId.value = areaId || '';
-
-                showModal(modal);
-                
-                setTimeout(() => {
-                    document.getElementById('legionName').focus();
-                }, 400);
-            });
-        }
-    });
-</script>
+    </script>
 
 </body>
+
 </html>
