@@ -60,18 +60,22 @@ $premium_plans_image = json_decode($home_premium_plans_image, true);
                                             <span class="<?= $package_class ?>"><?php echo translate('pay_now') ?></span>
                                         </a> -->
                                         <?php
-                                        $admin_id = $this->session->userdata('admin_id'); // check if admin logged in
+                                        $user_type = $this->session->userdata('user_type'); // get the logged-in user type
+                                        ?>
+                                        <?php
+                                        $user_type = $this->session->userdata('user_type'); // get the logged-in user type
+                                        $plan_id = $value->plan_id; // assuming $value->plan_id is set
                                         ?>
 
-                                        <?php if ($admin_id): ?>
-                                            <!-- Admin trying to pay -->
+                                        <?php if ($user_type == 0 && !in_array($plan_id, [17, 18])): ?>
+                                            <!-- Admin cannot make payment unless plan_id is 17 or 18 -->
                                             <a href="javascript:void(0);"
-                                                onclick="alert('You can’t make payment as Admin.')"
+                                                onclick="alert('You cannot make a payment as a member. Please contact the President.')"
                                                 class="btn btn-styled btn-sm btn-danger btn-circle z-depth-2-bottom">
                                                 <?= translate('pay_now') ?>
                                             </a>
                                         <?php else: ?>
-                                            <!-- Normal members can pay -->
+                                            <!-- Normal members or anyone with plan_id 17/18 can pay -->
                                             <a href="<?= $purchase_link ?>"
                                                 class="btn btn-styled btn-sm btn-base-1 btn-outline btn-circle z-depth-2-bottom">
                                                 <span class="<?= $package_class ?>"><?= translate('pay_now') ?></span>
