@@ -137,12 +137,21 @@
 					<div class="form-group">
 						<label class="col-sm-3 control-label"><b>Legion <span class="text-danger">*</span></b></label>
 						<div class="col-sm-8">
-							<select id="legion" name="legion_id" class="form-control">
+							<select id="legion" name="legion_id" class="form-control" onchange="setLegionName(this);">
 								<option value="">Select Legion</option>
-								<!-- Legions will be loaded dynamically -->
+								<?php if ($admin_area): ?>
+									<?php
+									$legions = $this->db->get_where('legions', ['area_id' => $admin_area->area_id])->result_array();
+									?>
+									<?php foreach ($legions as $legion): ?>
+										<option value="<?= $legion['legion_id'] ?>"><?= $legion['name'] ?></option>
+									<?php endforeach; ?>
+								<?php endif; ?>
 							</select>
+							<input type="hidden" name="legion" id="legion_name"> <!-- Legion name -->
 						</div>
 					</div>
+
 
 					<!-- Submit button -->
 					<div class="form-group">

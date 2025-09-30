@@ -40,10 +40,11 @@
 			$role = $this->db->get_where("role", ["role_id" => $admin->role_id])->row();
 		}
 		?>
-
-		<button type="button" disabled class="btn btn-info">
+		<h1 disabled class="btn btn-info">
 			Area ID: <?= $admin_area ? $admin_area->area_id : 'Not Assigned'; ?>
-		</button>
+		</h1>
+		<input type="hidden" name="area_id" value="<?= $admin_area->area_id ?? '' ?>"> <!-- For form submission -->
+
 
 
 		<h1 class="btn btn-success" disabled>

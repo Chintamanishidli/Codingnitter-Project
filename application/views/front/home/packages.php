@@ -56,9 +56,28 @@ $premium_plans_image = json_decode($home_premium_plans_image, true);
                                             $purchase_link = "#";
                                         }
                                         ?>
-                                        <a href="<?= $purchase_link ?>" class="btn btn-styled btn-sm btn-base-1 btn-outline btn-circle z-depth-2-bottom">
+                                        <!-- <a href="<?= $purchase_link ?>" class="btn btn-styled btn-sm btn-base-1 btn-outline btn-circle z-depth-2-bottom">
                                             <span class="<?= $package_class ?>"><?php echo translate('pay_now') ?></span>
-                                        </a>
+                                        </a> -->
+                                        <?php
+                                        $admin_id = $this->session->userdata('admin_id'); // check if admin logged in
+                                        ?>
+
+                                        <?php if ($admin_id): ?>
+                                            <!-- Admin trying to pay -->
+                                            <a href="javascript:void(0);"
+                                                onclick="alert('You can’t make payment as Admin.')"
+                                                class="btn btn-styled btn-sm btn-danger btn-circle z-depth-2-bottom">
+                                                <?= translate('pay_now') ?>
+                                            </a>
+                                        <?php else: ?>
+                                            <!-- Normal members can pay -->
+                                            <a href="<?= $purchase_link ?>"
+                                                class="btn btn-styled btn-sm btn-base-1 btn-outline btn-circle z-depth-2-bottom">
+                                                <span class="<?= $package_class ?>"><?= translate('pay_now') ?></span>
+                                            </a>
+                                        <?php endif; ?>
+
                                     </div>
                                 </div>
                             </div>
