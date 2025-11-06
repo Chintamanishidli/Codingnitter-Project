@@ -17,6 +17,7 @@ class Auth extends CI_Controller
     $this->load->view('auth/register');
   }
 
+
   // Handle Form Submission
   public function registerUser()
   {
@@ -67,9 +68,7 @@ class Auth extends CI_Controller
     $this->email->from('info@siddhrans.in', 'Siddhrans CRM Team');
     $this->email->to($email);
     $this->email->subject('Registration Successful');
-    $this->email->message("Hello $firstname $lastname,\n\nThank you for registering with us!
-            Your registration has been completed successfully. You can now log in using your credentials and start exploring our services. If you face any issues or have questions, feel free to reach out to our support team at info@siddhrans.in
-            Welcome aboard! 🚀</p>!\n\nThanks,\nSiddhrans CRM Team");
+    $this->email->message("Hello $firstname $lastname,\n\nThank you for registering with us!\n Your registration has been completed successfully. You can now log in using your credentials and start exploring our services. If you face any issues or have questions, feel free to reach out to our support team at info@siddhrans.in Welcome aboard!\n\nThanks,\nSiddhrans CRM Team");
 
     if ($this->email->send()) {
       log_message('info', "Confirmation email sent to $email");
@@ -90,6 +89,8 @@ class Auth extends CI_Controller
       log_message('error', "Failed to notify admin: " . $this->email->print_debugger());
     }
 
-    echo "Registration successful!.";
+    echo '<div style="padding:15px; background:#d4edda; color:#155724; border:1px solid #c3e6cb; border-radius:6px; font-family:Arial; margin:20px 0;">
+        🎉 Registration successful! A confirmation email has been sent your Email.
+      </div>';
   }
 }
